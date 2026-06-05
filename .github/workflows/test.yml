@@ -1,0 +1,71 @@
+name: test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # Label of the runner job
+  test:
+    # You must use a Linux environment when using service containers or container jobs
+    runs-on: ubuntu-latest
+    # Service containers to run with `builder` job
+    services:
+      # Label used to access the service container
+      # https://docs.github.com/en/actions/using-containerized-services/creating-postgresql-service-containers
+      postgres:
+        # Docker Hub image
+        image: postgis/postgis:14-3.3
+        # Provide the password for postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          # Maps tcp port 5432 on service container to the host
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.22'
+    - run: go version
+
+    - name: Add unaccent extension to Postgres DB
+      env:
+        PGPASSWORD: postgres
+      run: psql -h localhost -p 5432 -d postgres -U postgres -c 'CREATE EXTENSION unaccent;'
+
+    - name: Test
+      env:
+        PORT: 9090
+        JWT_SECRET: ${{ secrets.JWT_SECRET }}
+        JWT_ISSUER_ID: ${{ secrets.JWT_ISSUER_ID }}
+        JWT_CONTEXT_KEY: ${{ secrets.JWT_CONTEXT_KEY }}
+        JWT_DURATION_MINUTES: 240
+        JWT_AUTH_URL: ${{ secrets.JWT_AUTH_URL }}
+        JWT_STATUS_URL: ${{ secrets.JWT_STATUS_URL }}
+        ADMIN_USER: ${{ secrets.ADMIN_USER }}
+        ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+        ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+        ADMIN_ID: ${{ secrets.ADMIN_ID }}
+        DB_DRIVER: postgres
+        DB_HOST: 127.0.0.1
+        DB_PORT: 5432
+        DB_SSL_MODE: prefer
+        DB_NAME: postgres
+        DB_USER: postgres
+        DB_PASSWORD: postgres
+        PGPASSWORD: postgres
+        APP_DSN: postgres://127.0.0.1:${{ job.services.postgres.ports[5432] }}/postgres?sslmode=disable&user=postgres&password=postgres
+      run: go test -race -coverprofile coverage.out -coverpkg=./cmd/...,./pkg/... ./...
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        file: ./coverage.out

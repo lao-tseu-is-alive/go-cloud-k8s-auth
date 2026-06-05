@@ -1,0 +1,6 @@
+DROP TABLE IF EXISTS template_4_your_project_name_db_schema.template_4_your_project_name;
+DROP TABLE IF EXISTS template_4_your_project_name_db_schema.type_template_4_your_project_name;
+DROP SCHEMA IF EXISTS template_4_your_project_name_db_schema CASCADE;
+DROP TABLE IF EXISTS schema_migrations;
+DROP TABLE IF EXISTS go_metadata_db_schema;
+DROP TYPE IF EXISTS template_4_your_project_name_status_type;

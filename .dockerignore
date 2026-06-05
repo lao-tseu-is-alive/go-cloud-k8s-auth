@@ -1,0 +1,10 @@
+.idea
+*.md
+.env
+.env_sample
+.gitignore
+Dockerfile
+Makefile
+scripts/*
+api/*
+deployments/*
