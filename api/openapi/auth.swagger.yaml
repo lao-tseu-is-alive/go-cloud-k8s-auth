@@ -1,0 +1,446 @@
+swagger: "2.0"
+info:
+  title: auth/v1/auth.proto
+  version: version not set
+tags:
+  - name: AuthService
+  - name: UserService
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  /user:
+    get:
+      summary: |-
+        List returns a list of users.
+        Returns the user in an array.
+      operationId: List
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1ListResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: limit
+          description: maximum number of results to return
+          in: query
+          required: false
+          type: integer
+          format: int32
+        - name: offset
+          description: offset rows to skip before returning rows
+          in: query
+          required: false
+          type: integer
+          format: int32
+        - name: disabled
+          description: inactivated flag to filter the users to return
+          in: query
+          required: false
+          type: boolean
+      tags:
+        - UserService
+    post:
+      summary: |-
+        Create creates a new user.
+        Creates a new user.
+      operationId: Create
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1CreateResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: user
+          description: User to add
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/v1User'
+      tags:
+        - UserService
+  /user/by-external-id/{externalId}:
+    get:
+      summary: |-
+        GetByExternalId returns a user having an externalId or nothing if not found.
+        Returns the user.
+      operationId: GetByExternalId
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1GetByExternalIdResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: externalId
+          description: externalId of the user needed
+          in: path
+          required: true
+          type: integer
+          format: int32
+        - name: limit
+          in: query
+          required: false
+          type: integer
+          format: int32
+        - name: offset
+          in: query
+          required: false
+          type: integer
+          format: int32
+      tags:
+        - UserService
+  /user/count:
+    get:
+      summary: |-
+        Count returns the number of user based on search criterias.
+        Returns the number of users found after filtering with passed criterias.
+      operationId: Count
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1CountResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: inactivated
+          in: query
+          required: false
+          type: boolean
+      tags:
+        - UserService
+  /user/{id}:
+    get:
+      summary: |-
+        Get retrieves in backend all information about a specific userId.
+        Retrieve a specific user.
+      operationId: Get
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1GetResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: id
+          description: Id of the user
+          in: path
+          required: true
+          type: string
+      tags:
+        - UserService
+    delete:
+      summary: |-
+        Delete allows to delete a specific userId.
+        delete a user.
+      operationId: Delete
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1DeleteResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: id
+          description: Id of the user
+          in: path
+          required: true
+          type: string
+      tags:
+        - UserService
+    put:
+      summary: |-
+        Update allows to modify information about a specific userId.
+        Updates the status of a user.
+      operationId: Update
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1UpdateResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: id
+          description: Id of the user
+          in: path
+          required: true
+          type: string
+        - name: user
+          description: informations related to the user
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/v1User'
+      tags:
+        - UserService
+  /v1/auth/callback:
+    post:
+      operationId: OAuthCallback
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1OAuthCallbackResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/v1OAuthCallbackRequest'
+      tags:
+        - AuthService
+  /v1/auth/currentUser:
+    get:
+      operationId: GetCurrentUser
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1User'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      tags:
+        - AuthService
+  /v1/auth/start:
+    post:
+      operationId: StartOAuth
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1StartOAuthResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/v1StartOAuthRequest'
+      tags:
+        - AuthService
+  /v1/auth/validateToken:
+    post:
+      operationId: ValidateToken
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1ValidateTokenResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/v1ValidateTokenRequest'
+      tags:
+        - AuthService
+definitions:
+  protobufAny:
+    type: object
+    properties:
+      '@type':
+        type: string
+    additionalProperties: {}
+  rpcStatus:
+    type: object
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
+      details:
+        type: array
+        items:
+          type: object
+          $ref: '#/definitions/protobufAny'
+  v1CountResponse:
+    type: object
+    properties:
+      count:
+        type: integer
+        format: int32
+  v1CreateResponse:
+    type: object
+    properties:
+      user:
+        $ref: '#/definitions/v1User'
+  v1DeleteResponse:
+    type: object
+    title: Empty, maps to 204 No Content typically
+  v1GetByExternalIdResponse:
+    type: object
+    properties:
+      user:
+        $ref: '#/definitions/v1User'
+  v1GetResponse:
+    type: object
+    properties:
+      user:
+        $ref: '#/definitions/v1User'
+  v1ListResponse:
+    type: object
+    properties:
+      users:
+        type: array
+        items:
+          type: object
+          $ref: '#/definitions/v1UserList'
+  v1OAuthCallbackRequest:
+    type: object
+    properties:
+      provider:
+        type: string
+      code:
+        type: string
+      state:
+        type: string
+  v1OAuthCallbackResponse:
+    type: object
+    properties:
+      jwt:
+        type: string
+      user:
+        $ref: '#/definitions/v1User'
+  v1StartOAuthRequest:
+    type: object
+    properties:
+      provider:
+        type: string
+        title: google, github, microsoft
+      redirectUrl:
+        type: string
+        title: optionnel
+    title: OAuth Login Flow
+  v1StartOAuthResponse:
+    type: object
+    properties:
+      authUrl:
+        type: string
+      state:
+        type: string
+        title: anti-CSRF
+  v1UpdateResponse:
+    type: object
+    properties:
+      user:
+        $ref: '#/definitions/v1User'
+  v1User:
+    type: object
+    properties:
+      id:
+        type: string
+        title: |-
+          identifiant uuid v4
+          cet Universally unique identifier (UUID) sera généré automatiquement pour vous
+      externalId:
+        type: string
+        format: int64
+        title: identifiant numérique externe legacy
+      email:
+        type: string
+      name:
+        type: string
+      avatarUrl:
+        type: string
+      provider:
+        type: string
+      disabled:
+        type: boolean
+      roles:
+        type: array
+        items:
+          type: string
+      createdAt:
+        type: string
+        format: date-time
+        title: date de création de cet enregistrement dans la base
+        readOnly: true
+      lastLoginAt:
+        type: string
+        format: date-time
+        readOnly: true
+    title: Messages principaux
+    required:
+      - id
+      - email
+      - name
+      - disabled
+  v1UserList:
+    type: object
+    properties:
+      id:
+        type: string
+      externalId:
+        type: string
+        format: int64
+      email:
+        type: string
+      name:
+        type: string
+      disabled:
+        type: boolean
+      createdAt:
+        type: string
+        format: date-time
+        readOnly: true
+      lastLoginAt:
+        type: string
+        format: date-time
+        readOnly: true
+    title: A light version of User for lists
+    required:
+      - id
+      - email
+      - name
+      - disabled
+  v1ValidateTokenRequest:
+    type: object
+    properties:
+      token:
+        type: string
+    title: Token validation
+  v1ValidateTokenResponse:
+    type: object
+    properties:
+      valid:
+        type: boolean
+      user:
+        $ref: '#/definitions/v1User'
