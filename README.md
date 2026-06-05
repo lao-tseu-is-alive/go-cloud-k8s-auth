@@ -8,18 +8,20 @@
 
 # 🚀 go-cloud-auth
 
-A modern **Proto-first** microservice for managing "goCloudAuths" — built with Go, gRPC, ConnectRPC, and designed for cloud-native Kubernetes deployments.
+A modern **Proto-first** microservice for managing users and authentication — built with Go, gRPC, ConnectRPC, and designed for cloud-native Kubernetes deployments.
 
 > **Proto as Source of Truth**: API contracts are defined in Protocol Buffers, generating both Go code and OpenAPI specs automatically. Clients can connect via REST, gRPC, or Connect protocols.
 
 ## ✨ Features
 
-- 🔐 **JWT Authentication** — Secure endpoints with token-based auth 
+- 🔐 **OAuth2 Social Login** — Google, GitHub, and Microsoft AD authentication
+- 👤 **User Management** — Auto-upsert profiles on login and standard CRUD support
+- 🔑 **JWT Signing & Verification** — Cryptographically signs and validates user session tokens
+- 🛡️ **Role-Based Access Control (RBAC)** — Simple role checks (admin, user) with group support
 - 📡 **Multi-Protocol Support** — REST, gRPC, and Connect (JSON/Proto) via [Vanguard transcoding](https://github.com/connectrpc/vanguard-go)
-- 📋 **Proto-First Design** — Single source of truth for API definitions
-- 🐘 **PostgreSQL Backend** — Robust data persistence with pgx driver
+- 🐘 **PostgreSQL Backend** — Robust data persistence with pgx driver and database migrations
 - 🐳 **Container Ready** — Optimized Docker images with CVE scanning via Trivy
-- ☸️ **Kubernetes Native** — Ready for K8s deployment with health checks and metrics
+- ☸️ **Kubernetes Native** — Ready for K8s deployment with health checks, metrics, and Prometheus support
 
 ---
 
@@ -28,7 +30,7 @@ A modern **Proto-first** microservice for managing "goCloudAuths" — built with
 ```mermaid
 graph TB
     subgraph Clients["📱 Clients"]
-        REST["🌐 REST<br/>GET /goapi/v1/go_cloud_auth"]
+        REST["🌐 REST<br/>POST /goapi/v1/auth/..."]
         CONNECT["⚡ Connect<br/>JSON / Proto"]
         GRPC["🔌 gRPC"]
     end
@@ -36,14 +38,15 @@ graph TB
     subgraph Server["🖥️ Echo Server"]
         VG["🔄 Vanguard Transcoder"]
         subgraph Services["Connect Services"]
-            TS["goCloudAuthService"]
-            TTS["TypegoCloudAuthService"]
+            AS["AuthService"]
+            US["UserService"]
         end
     end
     
     subgraph Core["⚙️ Business Layer"]
-        BS["BusinessService"]
-        ST["Storage Interface"]
+        ABS["AuthBusinessService"]
+        UBS["UserBusinessService"]
+        ST["UserStorage (PostgreSQL)"]
     end
     
     subgraph Data["💾 Data Layer"]
@@ -53,11 +56,12 @@ graph TB
     REST --> VG
     CONNECT --> VG
     GRPC --> VG
-    VG --> TS
-    VG --> TTS
-    TS --> BS
-    TTS --> BS
-    BS --> ST
+    VG --> AS
+    VG --> US
+    AS --> ABS
+    US --> UBS
+    ABS --> ST
+    UBS --> ST
     ST --> PG
 ```
 
@@ -68,62 +72,58 @@ graph TB
 The API is defined using **Protocol Buffers** as the single source of truth:
 
 ```
-api/proto/go_cloud_auth/v1/
-├── go_cloud_auth.proto           # goCloudAuthService definitions
-└── type_go_cloud_auth.proto      # TypegoCloudAuthService definitions
+proto/auth/v1/
+└── auth.proto                 # AuthService & UserService definitions
 ```
 
 ### Generated Artifacts
 
 | Source | Generated | Purpose |
 |--------|-----------|---------|
-| `.proto` files | `gen/go_cloud_auth/v1/*.go` | Go types & gRPC stubs |
-| `.proto` files | `gen/go_cloud_auth/v1/go_cloud_authv1connect/*.go` | Connect handlers |
-| `.proto` files | `api/openapi/go_cloud_auth.yaml` | OpenAPI 3.0 spec |
+| `.proto` files | `gen/auth/v1/*.go` | Go types & gRPC stubs |
+| `.proto` files | `gen/auth/v1/authv1connect/*.go` | Connect handlers |
+| `.proto` files | `api/openapi/auth.swagger.yaml` | OpenAPI 2.0 spec |
 
 ### Regenerate Code
 
 ```bash
 ./scripts/buf_generate.sh
 # or
-buf generate api/proto
+buf generate
 ```
 
 ---
 
 ## 🔌 API Endpoints
 
-All endpoints are prefixed with `/goapi/v1` and require JWT authentication.
+All endpoints are prefixed with `/goapi/v1` and require JWT authentication (except public OAuth endpoints: `StartOAuth`, `OAuthCallback`, and `ValidateToken`).
 
-### goCloudAuth Resources
+### Authentication Resources (AuthService)
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/goapi/v1/go_cloud_auth` | List go_cloud_auths |
-| `POST` | `/goapi/v1/go_cloud_auth` | Create a go_cloud_auth |
-| `GET` | `/goapi/v1/go_cloud_auth/{id}` | Get go_cloud_auth by ID |
-| `PUT` | `/goapi/v1/go_cloud_auth/{id}` | Update a go_cloud_auth |
-| `DELETE` | `/goapi/v1/go_cloud_auth/{id}` | Delete a go_cloud_auth |
-| `GET` | `/goapi/v1/go_cloud_auth/search` | Search go_cloud_auths |
-| `GET` | `/goapi/v1/go_cloud_auth/count` | Count go_cloud_auths |
-| `GET` | `/goapi/v1/go_cloud_auth/geojson` | Get GeoJSON |
+| Method | Endpoint | Description | Public / Secured |
+|--------|----------|-------------|------------------|
+| `POST` | `/goapi/v1/auth/start` | Initiates OAuth flow (Google, GitHub, Microsoft) | **Public** |
+| `POST` | `/goapi/v1/auth/callback` | Exhanges authorization code for signed JWT | **Public** |
+| `POST` | `/goapi/v1/auth/validateToken` | Verifies a JWT token's validity | **Public** |
+| `GET` | `/goapi/v1/auth/currentUser` | Returns details of the currently logged-in user | **Secured** |
 
-### TypegoCloudAuth Resources
+### User Resources (UserService)
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/goapi/v1/types` | List type go_cloud_auths |
-| `POST` | `/goapi/v1/types` | Create type go_cloud_auth |
-| `GET` | `/goapi/v1/types/{id}` | Get type go_cloud_auth by ID |
-| `PUT` | `/goapi/v1/types/{id}` | Update type go_cloud_auth |
-| `DELETE` | `/goapi/v1/types/{id}` | Delete type go_cloud_auth |
-| `GET` | `/goapi/v1/types/count` | Count type go_cloud_auths |
+| Method | Endpoint | Description | Public / Secured |
+|--------|----------|-------------|------------------|
+| `GET` | `/goapi/v1/user` | List users with pagination | **Secured** |
+| `POST` | `/goapi/v1/user` | Create a user | **Secured (Admin)** |
+| `GET` | `/goapi/v1/user/{id}` | Get user details by UUID | **Secured** |
+| `PUT` | `/goapi/v1/user/{id}` | Update a user's details | **Secured (Admin)** |
+| `DELETE` | `/goapi/v1/user/{id}` | Delete a user by UUID | **Secured (Admin)** |
+| `GET` | `/goapi/v1/user/count` | Count total users in the DB | **Secured** |
+| `GET` | `/goapi/v1/user/by-external-id/{external_id}` | Retrieve a user by their legacy integer ID | **Secured** |
 
 ### Connect RPC Endpoints
 
 ```bash
 # Connect JSON format
-curl -X POST http://localhost:9090/go_cloud_auth.v1.goCloudAuthService/List \
+curl -X POST http://localhost:9090/auth.v1.UserService/List \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
   -d '{"limit": 10}'
@@ -347,22 +347,31 @@ Find all available versions in the [Packages section](https://github.com/lao-tse
 
 ```
 go-cloud-auth/
+├── proto/
+│   └── auth/v1/                 # 📋 Proto definitions (source of truth)
 ├── api/
-│   ├── proto/go_cloud_auth/v1/          # 📋 Proto definitions (source of truth)
-│   └── openapi/                  # 📄 Generated OpenAPI specs
+│   └── openapi/                 # 📄 Generated OpenAPI specs
 ├── cmd/
-│   └── goCloudAuthServer/   # 🚀 Main application entry point
+│   └── goCloudAuthServer/       # 🚀 Main application entry point
 ├── gen/
-│   └── go_cloud_auth/v1/                # ⚙️ Generated Go code from protos
+│   └── auth/v1/                 # ⚙️ Generated Go code from protos
 ├── pkg/
-│   └── go_cloud_auth/                   # 📦 Business logic
-│       ├── business_service.go  # Core business operations
-│       ├── connect_server.go    # Connect RPC handlers
-│       ├── mappers.go           # Domain ↔ Proto conversion
-│       └── storage_postgres.go  # Database operations
+│   ├── auth/                    # 📦 Authentication & User services
+│   │   ├── auth_service.go      # OAuth and token business logic
+│   │   ├── user_service.go      # User CRUD business logic
+│   │   ├── auth_connect_server.go # ConnectRPC auth handlers
+│   │   ├── user_connect_server.go # ConnectRPC user handlers
+│   │   ├── storage.go           # Storage interfaces
+│   │   ├── storage_postgres.go  # PostgreSQL operations (pgx)
+│   │   ├── auth_interceptor.go  # JWT validation interceptor
+│   │   ├── mappers.go           # Domain ↔ Proto conversion stubs
+│   │   ├── state_store.go       # Safe in-memory anti-CSRF store
+│   │   └── errors.go / messages.go # Domain validation & error constants
+│   └── rbac/                    # 🛡️ Role-Based Access Control
+│       ├── enforcer.go          # RBAC interface
+│       └── simple_enforcer.go   # Admin & User static rules
 ├── db/migrations/               # 🗃️ SQL migrations
-├── scripts/                     # 🔧 Build & generation scripts
-└── documentation/               # 📚 Requirements & docs
+└── scripts/                     # 🔧 Build & generation scripts
 ```
 
 ---
