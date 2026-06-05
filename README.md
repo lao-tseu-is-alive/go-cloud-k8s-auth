@@ -1,10 +1,13 @@
-[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=your-github-account_go-cloud-auth&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=your-github-account_go-cloud-auth)
-[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=your-github-account_go-cloud-auth&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=your-github-account_go-cloud-auth)
-[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=your-github-account_go-cloud-auth&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=your-github-account_go-cloud-auth)
-[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=your-github-account_go-cloud-auth&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=your-github-account_go-cloud-auth)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=lao-tseu-is-alive__go-cloud-auth&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=lao-tseu-is-alive__go-cloud-auth)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=lao-tseu-is-alive__go-cloud-auth&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=lao-tseu-is-alive__go-cloud-auth)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=lao-tseu-is-alive__go-cloud-auth&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=lao-tseu-is-alive__go-cloud-auth)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=lao-tseu-is-alive__go-cloud-auth&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=lao-tseu-is-alive__go-cloud-auth)
 [![test](https://github.com/lao-tseu-is-alive/go-cloud-k8s-auth/actions/workflows/test.yml/badge.svg)](https://github.com/lao-tseu-is-alive/go-cloud-k8s-auth/actions/workflows/test.yml)
 [![cve-trivy-scan](https://github.com/lao-tseu-is-alive/go-cloud-k8s-auth/actions/workflows/cve-trivy-scan.yml/badge.svg)](https://github.com/lao-tseu-is-alive/go-cloud-k8s-auth/actions/workflows/cve-trivy-scan.yml)
-[![codecov](https://codecov.io/gh/your-github-account/go-cloud-auth/branch/main/graph/badge.svg?token=02AHW79CES)](https://codecov.io/gh/your-github-account/go-cloud-auth)
+[![codecov](https://codecov.io/gh/lao-tseu-is-alive_/go-cloud-auth/branch/main/graph/badge.svg?token=02AHW79CES)](https://codecov.io/gh/lao-tseu-is-alive_/go-cloud-auth)
+
+
+https://sonarcloud.io/summary/new_code?id=lao-tseu-is-alive_go-cloud-k8s-common-libs
 
 # 🚀 go-cloud-auth
 
@@ -306,7 +309,7 @@ make test
 ### Pull from GitHub Container Registry
 
 ```bash
-docker pull ghcr.io/your-github-account/go-cloud-auth:latest
+docker pull ghcr.io/lao-tseu-is-alive_/go-cloud-auth:latest
 ```
 
 ### Build Locally
