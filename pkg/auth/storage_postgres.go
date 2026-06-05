@@ -45,45 +45,6 @@ func NewPgxDB(ctx context.Context, db database.DB, log *slog.Logger) (Storage, e
 	return &psql, err
 }
 
-func (db *PGX) GeoJson(ctx context.Context, offset, limit int, params GeoJsonParams) (string, error) {
-	db.log.Debug("trace: entering GeoJson", "offset", offset, "limit", limit)
-	if params.Type != nil {
-		db.log.Info("param type", "type", *params.Type)
-	}
-	if params.CreatedBy != nil {
-		db.log.Info("params.CreatedBy", "createdBy", *params.CreatedBy)
-	}
-	var (
-		mayBeResultIsNull *string
-		err               error
-	)
-	isInactive := false
-	if params.Inactivated != nil {
-		isInactive = *params.Inactivated
-	}
-	listAuths := baseGeoJsonAuthSearch + listAuthsConditions
-	if params.Validated != nil {
-		db.log.Debug("params.Validated is not nil ")
-		isValidated := *params.Validated
-		listAuths += " AND validated = coalesce($6, validated) " + geoJsonListEndOfQuery
-		err = pgxscan.Select(ctx, db.Conn, &mayBeResultIsNull, listAuths,
-			limit, offset, &params.Type, &params.CreatedBy, isInactive, isValidated)
-	} else {
-		listAuths += geoJsonListEndOfQuery
-		err = pgxscan.Select(ctx, db.Conn, &mayBeResultIsNull, listAuths,
-			limit, offset, &params.Type, &params.CreatedBy, isInactive)
-	}
-	if err != nil {
-		db.log.Error(SelectFailedInNWithErrorE, "List", err)
-		return "", err
-	}
-	if mayBeResultIsNull == nil {
-		db.log.Info("List returned no results")
-		return "", pgx.ErrNoRows
-	}
-	return *mayBeResultIsNull, nil
-}
-
 // List returns the list of existing go_cloud_auths with the given offset and limit.
 func (db *PGX) List(ctx context.Context, offset, limit int, params ListParams) ([]*AuthList, error) {
 	db.log.Debug("trace: entering List", "offset", offset, "limit", limit)

@@ -9,7 +9,6 @@ import (
 	context "context"
 	errors "errors"
 	v1 "github.com/lao-tseu-is-alive/go-cloud-k8s-auth/gen/auth/v1"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	http "net/http"
 	strings "strings"
 )
@@ -69,7 +68,7 @@ type AuthServiceClient interface {
 	StartOAuth(context.Context, *v1.StartOAuthRequest) (*v1.StartOAuthResponse, error)
 	OAuthCallback(context.Context, *v1.OAuthCallbackRequest) (*v1.OAuthCallbackResponse, error)
 	ValidateToken(context.Context, *v1.ValidateTokenRequest) (*v1.ValidateTokenResponse, error)
-	GetCurrentUser(context.Context, *emptypb.Empty) (*v1.User, error)
+	GetCurrentUser(context.Context, *v1.GetCurrentUserRequest) (*v1.GetCurrentUserResponse, error)
 }
 
 // NewAuthServiceClient constructs a client for the auth.v1.AuthService service. By default, it uses
@@ -101,7 +100,7 @@ func NewAuthServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(authServiceMethods.ByName("ValidateToken")),
 			connect.WithClientOptions(opts...),
 		),
-		getCurrentUser: connect.NewClient[emptypb.Empty, v1.User](
+		getCurrentUser: connect.NewClient[v1.GetCurrentUserRequest, v1.GetCurrentUserResponse](
 			httpClient,
 			baseURL+AuthServiceGetCurrentUserProcedure,
 			connect.WithSchema(authServiceMethods.ByName("GetCurrentUser")),
@@ -115,7 +114,7 @@ type authServiceClient struct {
 	startOAuth     *connect.Client[v1.StartOAuthRequest, v1.StartOAuthResponse]
 	oAuthCallback  *connect.Client[v1.OAuthCallbackRequest, v1.OAuthCallbackResponse]
 	validateToken  *connect.Client[v1.ValidateTokenRequest, v1.ValidateTokenResponse]
-	getCurrentUser *connect.Client[emptypb.Empty, v1.User]
+	getCurrentUser *connect.Client[v1.GetCurrentUserRequest, v1.GetCurrentUserResponse]
 }
 
 // StartOAuth calls auth.v1.AuthService.StartOAuth.
@@ -146,7 +145,7 @@ func (c *authServiceClient) ValidateToken(ctx context.Context, req *v1.ValidateT
 }
 
 // GetCurrentUser calls auth.v1.AuthService.GetCurrentUser.
-func (c *authServiceClient) GetCurrentUser(ctx context.Context, req *emptypb.Empty) (*v1.User, error) {
+func (c *authServiceClient) GetCurrentUser(ctx context.Context, req *v1.GetCurrentUserRequest) (*v1.GetCurrentUserResponse, error) {
 	response, err := c.getCurrentUser.CallUnary(ctx, connect.NewRequest(req))
 	if response != nil {
 		return response.Msg, err
@@ -159,7 +158,7 @@ type AuthServiceHandler interface {
 	StartOAuth(context.Context, *v1.StartOAuthRequest) (*v1.StartOAuthResponse, error)
 	OAuthCallback(context.Context, *v1.OAuthCallbackRequest) (*v1.OAuthCallbackResponse, error)
 	ValidateToken(context.Context, *v1.ValidateTokenRequest) (*v1.ValidateTokenResponse, error)
-	GetCurrentUser(context.Context, *emptypb.Empty) (*v1.User, error)
+	GetCurrentUser(context.Context, *v1.GetCurrentUserRequest) (*v1.GetCurrentUserResponse, error)
 }
 
 // NewAuthServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -224,7 +223,7 @@ func (UnimplementedAuthServiceHandler) ValidateToken(context.Context, *v1.Valida
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("auth.v1.AuthService.ValidateToken is not implemented"))
 }
 
-func (UnimplementedAuthServiceHandler) GetCurrentUser(context.Context, *emptypb.Empty) (*v1.User, error) {
+func (UnimplementedAuthServiceHandler) GetCurrentUser(context.Context, *v1.GetCurrentUserRequest) (*v1.GetCurrentUserResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("auth.v1.AuthService.GetCurrentUser is not implemented"))
 }
 

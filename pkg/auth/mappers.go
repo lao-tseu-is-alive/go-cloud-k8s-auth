@@ -1,4 +1,4 @@
-// Package go_cloud_auth provides mappers between domain types and Proto types.
+// Package auth provides mappers between domain types and Proto types.
 // This bridges the gap between the database layer (Domain) and the API layer (Proto).
 package auth
 
@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	go_cloud_authv1 "https://github.com/lao-tseu-is-alive/go-cloud-k8s-auth/gen/go_cloud_auth/v1"
+	authv1 "github.com/lao-tseu-is-alive/go-cloud-k8s-auth/gen/auth/v1"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -120,7 +120,7 @@ func stringToStatus(s string) *AuthStatus {
 // =============================================================================
 
 // DomainAuthToProto converts a domain Auth to a Proto Auth
-func DomainAuthToProto(t *Auth) *go_cloud_authv1.Auth {
+func DomainAuthToProto(t *Auth) *authv1.Auth {
 	if t == nil {
 		return nil
 	}

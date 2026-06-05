@@ -1,4 +1,4 @@
-// Package go_cloud_auth provides Connect RPC handlers for the AuthService.
+// Package auth provides Connect RPC handlers for the AuthService.
 package auth
 
 import (
@@ -9,8 +9,8 @@ import (
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	go_cloud_authv1 "https://github.com/lao-tseu-is-alive/go-cloud-k8s-auth/gen/go_cloud_auth/v1"
-	"https://github.com/lao-tseu-is-alive/go-cloud-k8s-auth/gen/go_cloud_auth/v1/go_cloud_authv1connect"
+	authv1 "github.com/lao-tseu-is-alive/go-cloud-k8s-auth/gen/auth/v1"
+	"github.com/lao-tseu-is-alive/go-cloud-k8s-auth/gen/auth/v1/authv1connect"
 )
 
 // AuthConnectServer implements the AuthServiceHandler interface.
@@ -20,7 +20,7 @@ type AuthConnectServer struct {
 	Log             *slog.Logger
 
 	// Embed the unimplemented handler for forward compatibility
-	go_cloud_authv1connect.UnimplementedAuthServiceHandler
+	authv1connect.UnimplementedAuthServiceHandler
 }
 
 // NewAuthConnectServer creates a new AuthConnectServer.
@@ -65,11 +65,11 @@ func (s *AuthConnectServer) mapErrorToConnect(err error) *connect.Error {
 // AuthService RPC Methods
 // =============================================================================
 
-// List returns a list of go_cloud_auths
+// List returns a list of auths
 func (s *AuthConnectServer) List(
 	ctx context.Context,
-	req *connect.Request[go_cloud_authv1.ListRequest],
-) (*connect.Response[go_cloud_authv1.ListResponse], error) {
+	req *connect.Request[authv1.ListRequest],
+) (*connect.Response[authv1.ListResponse], error) {
 	s.Log.Info("Connect: List called")
 
 	// User info injected by AuthInterceptor

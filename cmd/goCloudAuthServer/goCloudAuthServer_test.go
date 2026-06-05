@@ -20,27 +20,26 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
+	"github.com/lao-tseu-is-alive/go-cloud-k8s-auth/pkg/version"
 	"github.com/lao-tseu-is-alive/go-cloud-k8s-common-libs/pkg/config"
 	"github.com/lao-tseu-is-alive/go-cloud-k8s-common-libs/pkg/database"
 	"github.com/lao-tseu-is-alive/go-cloud-k8s-common-libs/pkg/gohttpclient"
 	"github.com/lao-tseu-is-alive/go-cloud-k8s-common-libs/pkg/golog"
 	"github.com/lao-tseu-is-alive/go-cloud-k8s-common-libs/pkg/tools"
 	"github.com/stretchr/testify/assert"
-	"https://github.com/lao-tseu-is-alive/go-cloud-k8s-auth/pkg/go_cloud_auth"
-	"https://github.com/lao-tseu-is-alive/go-cloud-k8s-auth/pkg/version"
 )
 
 const (
-	DEBUG                                 = false
-	assertCorrectStatusCodeExpected       = "expected status code should be returned"
-	urlLogin                              = "/login"
-	urlgoCloudAuth           = "/go_cloud_auth"
-	urlTypegoCloudAuth       = "/types"
-	newgoCloudAuthId         = "24466b0c-686d-42a3-87ef-bf6cefeb3d35"
-	urlNewgoCloudAuthId      = "/go_cloud_auth/" + newgoCloudAuthId
-	bodyIdNewgoCloudAuth     = "\"id\":\"" + newgoCloudAuthId + "\""
-	newgoCloudAuthExternalId = "1234567890"
-	examplegoCloudAuth       = `
+	DEBUG                           = false
+	assertCorrectStatusCodeExpected = "expected status code should be returned"
+	urlLogin                        = "/login"
+	urlgoCloudAuth                  = "/go_cloud_auth"
+	urlTypegoCloudAuth              = "/types"
+	newgoCloudAuthId                = "24466b0c-686d-42a3-87ef-bf6cefeb3d35"
+	urlNewgoCloudAuthId             = "/go_cloud_auth/" + newgoCloudAuthId
+	bodyIdNewgoCloudAuth            = "\"id\":\"" + newgoCloudAuthId + "\""
+	newgoCloudAuthExternalId        = "1234567890"
+	examplegoCloudAuth              = `
 {
     "created_by": 999999,
     "description": "La belle ville de 'Château Français'' de l'école œcuménique des chevaux & exemple de caractère",

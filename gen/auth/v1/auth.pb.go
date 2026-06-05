@@ -7,10 +7,11 @@
 package authv1
 
 import (
+	_ "github.com/lao-tseu-is-alive/go-cloud-k8s-auth/gen/buf/validate"
 	_ "github.com/lao-tseu-is-alive/go-cloud-k8s-auth/gen/google/api"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
+	_ "google.golang.org/protobuf/types/known/emptypb"
 	_ "google.golang.org/protobuf/types/known/structpb"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
@@ -1278,13 +1279,93 @@ func (x *ValidateTokenResponse) GetUser() *User {
 	return nil
 }
 
+type GetCurrentUserRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetCurrentUserRequest) Reset() {
+	*x = GetCurrentUserRequest{}
+	mi := &file_auth_v1_auth_proto_msgTypes[23]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetCurrentUserRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetCurrentUserRequest) ProtoMessage() {}
+
+func (x *GetCurrentUserRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_auth_v1_auth_proto_msgTypes[23]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetCurrentUserRequest.ProtoReflect.Descriptor instead.
+func (*GetCurrentUserRequest) Descriptor() ([]byte, []int) {
+	return file_auth_v1_auth_proto_rawDescGZIP(), []int{23}
+}
+
+type GetCurrentUserResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	User          *User                  `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetCurrentUserResponse) Reset() {
+	*x = GetCurrentUserResponse{}
+	mi := &file_auth_v1_auth_proto_msgTypes[24]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetCurrentUserResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetCurrentUserResponse) ProtoMessage() {}
+
+func (x *GetCurrentUserResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_auth_v1_auth_proto_msgTypes[24]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetCurrentUserResponse.ProtoReflect.Descriptor instead.
+func (*GetCurrentUserResponse) Descriptor() ([]byte, []int) {
+	return file_auth_v1_auth_proto_rawDescGZIP(), []int{24}
+}
+
+func (x *GetCurrentUserResponse) GetUser() *User {
+	if x != nil {
+		return x.User
+	}
+	return nil
+}
+
 var File_auth_v1_auth_proto protoreflect.FileDescriptor
 
 const file_auth_v1_auth_proto_rawDesc = "" +
 	"\n" +
-	"\x12auth/v1/auth.proto\x12\aauth.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1bgoogle/protobuf/empty.proto\"\xe7\x02\n" +
-	"\x04User\x12\x13\n" +
-	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x02R\x02id\x12\x1f\n" +
+	"\x12auth/v1/auth.proto\x12\aauth.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1fgoogle/api/field_behavior.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1bgoogle/protobuf/empty.proto\x1a\x1bbuf/validate/validate.proto\"\xf9\x02\n" +
+	"\x04User\x12\x1b\n" +
+	"\x02id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x02id\x12\x1f\n" +
 	"\vexternal_id\x18\x02 \x01(\x03R\n" +
 	"externalId\x12\x19\n" +
 	"\x05email\x18\x03 \x01(\tB\x03\xe0A\x02R\x05email\x12\x17\n" +
@@ -1292,8 +1373,8 @@ const file_auth_v1_auth_proto_rawDesc = "" +
 	"\n" +
 	"avatar_url\x18\x05 \x01(\tR\tavatarUrl\x12\x1a\n" +
 	"\bprovider\x18\x06 \x01(\tR\bprovider\x12\x1f\n" +
-	"\bdisabled\x18\a \x01(\bB\x03\xe0A\x02R\bdisabled\x12\x14\n" +
-	"\x05roles\x18\b \x03(\tR\x05roles\x12>\n" +
+	"\bdisabled\x18\a \x01(\bB\x03\xe0A\x02R\bdisabled\x12\x1e\n" +
+	"\x05roles\x18\b \x03(\tB\b\xbaH\x05\x92\x01\x02\b\x01R\x05roles\x12>\n" +
 	"\n" +
 	"created_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tcreatedAt\x12C\n" +
 	"\rlast_login_at\x18\n" +
@@ -1365,13 +1446,16 @@ const file_auth_v1_auth_proto_rawDesc = "" +
 	"\x05token\x18\x01 \x01(\tR\x05token\"P\n" +
 	"\x15ValidateTokenResponse\x12\x14\n" +
 	"\x05valid\x18\x01 \x01(\bR\x05valid\x12!\n" +
-	"\x04user\x18\x02 \x01(\v2\r.auth.v1.UserR\x04user2\xa7\x03\n" +
+	"\x04user\x18\x02 \x01(\v2\r.auth.v1.UserR\x04user\"\x17\n" +
+	"\x15GetCurrentUserRequest\";\n" +
+	"\x16GetCurrentUserResponse\x12!\n" +
+	"\x04user\x18\x01 \x01(\v2\r.auth.v1.UserR\x04user2\xc1\x03\n" +
 	"\vAuthService\x12`\n" +
 	"\n" +
 	"StartOAuth\x12\x1a.auth.v1.StartOAuthRequest\x1a\x1b.auth.v1.StartOAuthResponse\"\x19\x82\xd3\xe4\x93\x02\x13:\x01*\"\x0e/v1/auth/start\x12l\n" +
 	"\rOAuthCallback\x12\x1d.auth.v1.OAuthCallbackRequest\x1a\x1e.auth.v1.OAuthCallbackResponse\"\x1c\x82\xd3\xe4\x93\x02\x16:\x01*\"\x11/v1/auth/callback\x12q\n" +
-	"\rValidateToken\x12\x1d.auth.v1.ValidateTokenRequest\x1a\x1e.auth.v1.ValidateTokenResponse\"!\x82\xd3\xe4\x93\x02\x1b:\x01*\"\x16/v1/auth/validateToken\x12U\n" +
-	"\x0eGetCurrentUser\x12\x16.google.protobuf.Empty\x1a\r.auth.v1.User\"\x1c\x82\xd3\xe4\x93\x02\x16\x12\x14/v1/auth/currentUser2\xdb\x04\n" +
+	"\rValidateToken\x12\x1d.auth.v1.ValidateTokenRequest\x1a\x1e.auth.v1.ValidateTokenResponse\"!\x82\xd3\xe4\x93\x02\x1b:\x01*\"\x16/v1/auth/validateToken\x12o\n" +
+	"\x0eGetCurrentUser\x12\x1e.auth.v1.GetCurrentUserRequest\x1a\x1f.auth.v1.GetCurrentUserResponse\"\x1c\x82\xd3\xe4\x93\x02\x16\x12\x14/v1/auth/currentUser2\xdb\x04\n" +
 	"\vUserService\x12B\n" +
 	"\x04List\x12\x14.auth.v1.ListRequest\x1a\x15.auth.v1.ListResponse\"\r\x82\xd3\xe4\x93\x02\a\x12\x05/user\x12N\n" +
 	"\x06Create\x12\x16.auth.v1.CreateRequest\x1a\x17.auth.v1.CreateResponse\"\x13\x82\xd3\xe4\x93\x02\r:\x04user\"\x05/user\x12D\n" +
@@ -1397,7 +1481,7 @@ func file_auth_v1_auth_proto_rawDescGZIP() []byte {
 	return file_auth_v1_auth_proto_rawDescData
 }
 
-var file_auth_v1_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 23)
+var file_auth_v1_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 25)
 var file_auth_v1_auth_proto_goTypes = []any{
 	(*User)(nil),                    // 0: auth.v1.User
 	(*Group)(nil),                   // 1: auth.v1.Group
@@ -1422,14 +1506,15 @@ var file_auth_v1_auth_proto_goTypes = []any{
 	(*OAuthCallbackResponse)(nil),   // 20: auth.v1.OAuthCallbackResponse
 	(*ValidateTokenRequest)(nil),    // 21: auth.v1.ValidateTokenRequest
 	(*ValidateTokenResponse)(nil),   // 22: auth.v1.ValidateTokenResponse
-	(*timestamppb.Timestamp)(nil),   // 23: google.protobuf.Timestamp
-	(*emptypb.Empty)(nil),           // 24: google.protobuf.Empty
+	(*GetCurrentUserRequest)(nil),   // 23: auth.v1.GetCurrentUserRequest
+	(*GetCurrentUserResponse)(nil),  // 24: auth.v1.GetCurrentUserResponse
+	(*timestamppb.Timestamp)(nil),   // 25: google.protobuf.Timestamp
 }
 var file_auth_v1_auth_proto_depIdxs = []int32{
-	23, // 0: auth.v1.User.created_at:type_name -> google.protobuf.Timestamp
-	23, // 1: auth.v1.User.last_login_at:type_name -> google.protobuf.Timestamp
-	23, // 2: auth.v1.UserList.created_at:type_name -> google.protobuf.Timestamp
-	23, // 3: auth.v1.UserList.last_login_at:type_name -> google.protobuf.Timestamp
+	25, // 0: auth.v1.User.created_at:type_name -> google.protobuf.Timestamp
+	25, // 1: auth.v1.User.last_login_at:type_name -> google.protobuf.Timestamp
+	25, // 2: auth.v1.UserList.created_at:type_name -> google.protobuf.Timestamp
+	25, // 3: auth.v1.UserList.last_login_at:type_name -> google.protobuf.Timestamp
 	2,  // 4: auth.v1.ListResponse.users:type_name -> auth.v1.UserList
 	0,  // 5: auth.v1.CreateRequest.user:type_name -> auth.v1.User
 	0,  // 6: auth.v1.CreateResponse.user:type_name -> auth.v1.User
@@ -1439,33 +1524,34 @@ var file_auth_v1_auth_proto_depIdxs = []int32{
 	0,  // 10: auth.v1.GetByExternalIdResponse.user:type_name -> auth.v1.User
 	0,  // 11: auth.v1.OAuthCallbackResponse.user:type_name -> auth.v1.User
 	0,  // 12: auth.v1.ValidateTokenResponse.user:type_name -> auth.v1.User
-	17, // 13: auth.v1.AuthService.StartOAuth:input_type -> auth.v1.StartOAuthRequest
-	19, // 14: auth.v1.AuthService.OAuthCallback:input_type -> auth.v1.OAuthCallbackRequest
-	21, // 15: auth.v1.AuthService.ValidateToken:input_type -> auth.v1.ValidateTokenRequest
-	24, // 16: auth.v1.AuthService.GetCurrentUser:input_type -> google.protobuf.Empty
-	3,  // 17: auth.v1.UserService.List:input_type -> auth.v1.ListRequest
-	5,  // 18: auth.v1.UserService.Create:input_type -> auth.v1.CreateRequest
-	7,  // 19: auth.v1.UserService.Get:input_type -> auth.v1.GetRequest
-	9,  // 20: auth.v1.UserService.Update:input_type -> auth.v1.UpdateRequest
-	11, // 21: auth.v1.UserService.Delete:input_type -> auth.v1.DeleteRequest
-	13, // 22: auth.v1.UserService.Count:input_type -> auth.v1.CountRequest
-	15, // 23: auth.v1.UserService.GetByExternalId:input_type -> auth.v1.GetByExternalIdRequest
-	18, // 24: auth.v1.AuthService.StartOAuth:output_type -> auth.v1.StartOAuthResponse
-	20, // 25: auth.v1.AuthService.OAuthCallback:output_type -> auth.v1.OAuthCallbackResponse
-	22, // 26: auth.v1.AuthService.ValidateToken:output_type -> auth.v1.ValidateTokenResponse
-	0,  // 27: auth.v1.AuthService.GetCurrentUser:output_type -> auth.v1.User
-	4,  // 28: auth.v1.UserService.List:output_type -> auth.v1.ListResponse
-	6,  // 29: auth.v1.UserService.Create:output_type -> auth.v1.CreateResponse
-	8,  // 30: auth.v1.UserService.Get:output_type -> auth.v1.GetResponse
-	10, // 31: auth.v1.UserService.Update:output_type -> auth.v1.UpdateResponse
-	12, // 32: auth.v1.UserService.Delete:output_type -> auth.v1.DeleteResponse
-	14, // 33: auth.v1.UserService.Count:output_type -> auth.v1.CountResponse
-	16, // 34: auth.v1.UserService.GetByExternalId:output_type -> auth.v1.GetByExternalIdResponse
-	24, // [24:35] is the sub-list for method output_type
-	13, // [13:24] is the sub-list for method input_type
-	13, // [13:13] is the sub-list for extension type_name
-	13, // [13:13] is the sub-list for extension extendee
-	0,  // [0:13] is the sub-list for field type_name
+	0,  // 13: auth.v1.GetCurrentUserResponse.user:type_name -> auth.v1.User
+	17, // 14: auth.v1.AuthService.StartOAuth:input_type -> auth.v1.StartOAuthRequest
+	19, // 15: auth.v1.AuthService.OAuthCallback:input_type -> auth.v1.OAuthCallbackRequest
+	21, // 16: auth.v1.AuthService.ValidateToken:input_type -> auth.v1.ValidateTokenRequest
+	23, // 17: auth.v1.AuthService.GetCurrentUser:input_type -> auth.v1.GetCurrentUserRequest
+	3,  // 18: auth.v1.UserService.List:input_type -> auth.v1.ListRequest
+	5,  // 19: auth.v1.UserService.Create:input_type -> auth.v1.CreateRequest
+	7,  // 20: auth.v1.UserService.Get:input_type -> auth.v1.GetRequest
+	9,  // 21: auth.v1.UserService.Update:input_type -> auth.v1.UpdateRequest
+	11, // 22: auth.v1.UserService.Delete:input_type -> auth.v1.DeleteRequest
+	13, // 23: auth.v1.UserService.Count:input_type -> auth.v1.CountRequest
+	15, // 24: auth.v1.UserService.GetByExternalId:input_type -> auth.v1.GetByExternalIdRequest
+	18, // 25: auth.v1.AuthService.StartOAuth:output_type -> auth.v1.StartOAuthResponse
+	20, // 26: auth.v1.AuthService.OAuthCallback:output_type -> auth.v1.OAuthCallbackResponse
+	22, // 27: auth.v1.AuthService.ValidateToken:output_type -> auth.v1.ValidateTokenResponse
+	24, // 28: auth.v1.AuthService.GetCurrentUser:output_type -> auth.v1.GetCurrentUserResponse
+	4,  // 29: auth.v1.UserService.List:output_type -> auth.v1.ListResponse
+	6,  // 30: auth.v1.UserService.Create:output_type -> auth.v1.CreateResponse
+	8,  // 31: auth.v1.UserService.Get:output_type -> auth.v1.GetResponse
+	10, // 32: auth.v1.UserService.Update:output_type -> auth.v1.UpdateResponse
+	12, // 33: auth.v1.UserService.Delete:output_type -> auth.v1.DeleteResponse
+	14, // 34: auth.v1.UserService.Count:output_type -> auth.v1.CountResponse
+	16, // 35: auth.v1.UserService.GetByExternalId:output_type -> auth.v1.GetByExternalIdResponse
+	25, // [25:36] is the sub-list for method output_type
+	14, // [14:25] is the sub-list for method input_type
+	14, // [14:14] is the sub-list for extension type_name
+	14, // [14:14] is the sub-list for extension extendee
+	0,  // [0:14] is the sub-list for field type_name
 }
 
 func init() { file_auth_v1_auth_proto_init() }
@@ -1479,7 +1565,7 @@ func file_auth_v1_auth_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_auth_v1_auth_proto_rawDesc), len(file_auth_v1_auth_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   23,
+			NumMessages:   25,
 			NumExtensions: 0,
 			NumServices:   2,
 		},

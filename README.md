@@ -2,8 +2,8 @@
 [![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=your-github-account_go-cloud-auth&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=your-github-account_go-cloud-auth)
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=your-github-account_go-cloud-auth&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=your-github-account_go-cloud-auth)
 [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=your-github-account_go-cloud-auth&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=your-github-account_go-cloud-auth)
-[![test](https://https://github.com/lao-tseu-is-alive/go-cloud-k8s-auth/actions/workflows/test.yml/badge.svg)](https://https://github.com/lao-tseu-is-alive/go-cloud-k8s-auth/actions/workflows/test.yml)
-[![cve-trivy-scan](https://https://github.com/lao-tseu-is-alive/go-cloud-k8s-auth/actions/workflows/cve-trivy-scan.yml/badge.svg)](https://https://github.com/lao-tseu-is-alive/go-cloud-k8s-auth/actions/workflows/cve-trivy-scan.yml)
+[![test](https://github.com/lao-tseu-is-alive/go-cloud-k8s-auth/actions/workflows/test.yml/badge.svg)](https://github.com/lao-tseu-is-alive/go-cloud-k8s-auth/actions/workflows/test.yml)
+[![cve-trivy-scan](https://github.com/lao-tseu-is-alive/go-cloud-k8s-auth/actions/workflows/cve-trivy-scan.yml/badge.svg)](https://github.com/lao-tseu-is-alive/go-cloud-k8s-auth/actions/workflows/cve-trivy-scan.yml)
 [![codecov](https://codecov.io/gh/your-github-account/go-cloud-auth/branch/main/graph/badge.svg?token=02AHW79CES)](https://codecov.io/gh/your-github-account/go-cloud-auth)
 
 # 🚀 go-cloud-auth
@@ -14,7 +14,7 @@ A modern **Proto-first** microservice for managing "goCloudAuths" — built with
 
 ## ✨ Features
 
-- 🔐 **JWT Authentication** — Secure endpoints with token-based auth from [go-cloud-k8s-user-group](https://github.com/lao-tseu-is-alive/go-cloud-k8s-user-group)
+- 🔐 **JWT Authentication** — Secure endpoints with token-based auth 
 - 📡 **Multi-Protocol Support** — REST, gRPC, and Connect (JSON/Proto) via [Vanguard transcoding](https://github.com/connectrpc/vanguard-go)
 - 📋 **Proto-First Design** — Single source of truth for API definitions
 - 🐘 **PostgreSQL Backend** — Robust data persistence with pgx driver
@@ -188,7 +188,7 @@ docker pull ghcr.io/your-github-account/go-cloud-auth:latest
 docker build -t go-cloud-auth .
 ```
 
-Find all available versions in the [Packages section](https://https://github.com/lao-tseu-is-alive/go-cloud-k8s-auth/pkgs/container/go-cloud-auth).
+Find all available versions in the [Packages section](https://github.com/lao-tseu-is-alive/go-cloud-k8s-auth/pkgs/container/go-cloud-auth).
 
 ---
 

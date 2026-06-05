@@ -19,11 +19,6 @@ type MockStorage struct {
 	mock.Mock
 }
 
-func (m *MockStorage) GeoJson(ctx context.Context, offset, limit int, params GeoJsonParams) (string, error) {
-	args := m.Called(ctx, offset, limit, params)
-	return args.String(0), args.Error(1)
-}
-
 func (m *MockStorage) List(ctx context.Context, offset, limit int, params ListParams) ([]*AuthList, error) {
 	args := m.Called(ctx, offset, limit, params)
 	if args.Get(0) == nil {

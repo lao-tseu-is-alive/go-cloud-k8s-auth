@@ -41,18 +41,6 @@ func validateName(name string) error {
 	return nil
 }
 
-// GeoJson returns a geoJson representation of go_cloud_auths based on the given parameters
-func (s *BusinessService) GeoJson(ctx context.Context, offset, limit int, params GeoJsonParams) (string, error) {
-	jsonResult, err := s.Store.GeoJson(ctx, offset, limit, params)
-	if err != nil {
-		return "", fmt.Errorf("error retrieving geoJson: %w", err)
-	}
-	if jsonResult == "" {
-		return "empty", nil
-	}
-	return jsonResult, nil
-}
-
 // List returns the list of go_cloud_auths based on the given parameters
 func (s *BusinessService) List(ctx context.Context, offset, limit int, params ListParams) ([]*AuthList, error) {
 	list, err := s.Store.List(ctx, offset, limit, params)

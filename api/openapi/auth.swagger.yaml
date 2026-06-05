@@ -224,7 +224,7 @@ paths:
         "200":
           description: A successful response.
           schema:
-            $ref: '#/definitions/v1User'
+            $ref: '#/definitions/v1GetCurrentUserResponse'
         default:
           description: An unexpected error response.
           schema:
@@ -306,6 +306,11 @@ definitions:
     type: object
     title: Empty, maps to 204 No Content typically
   v1GetByExternalIdResponse:
+    type: object
+    properties:
+      user:
+        $ref: '#/definitions/v1User'
+  v1GetCurrentUserResponse:
     type: object
     properties:
       user:

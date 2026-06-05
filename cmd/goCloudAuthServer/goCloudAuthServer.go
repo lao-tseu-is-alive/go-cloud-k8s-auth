@@ -21,6 +21,9 @@ import (
 	"github.com/labstack/echo-contrib/echoprometheus"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/lao-tseu-is-alive/go-cloud-k8s-auth/gen/auth/v1/authv1connect"
+	"github.com/lao-tseu-is-alive/go-cloud-k8s-auth/pkg/auth"
+	"github.com/lao-tseu-is-alive/go-cloud-k8s-auth/pkg/version"
 	"github.com/lao-tseu-is-alive/go-cloud-k8s-common-libs/pkg/config"
 	"github.com/lao-tseu-is-alive/go-cloud-k8s-common-libs/pkg/database"
 	"github.com/lao-tseu-is-alive/go-cloud-k8s-common-libs/pkg/goHttpEcho"
@@ -28,9 +31,6 @@ import (
 	"github.com/lao-tseu-is-alive/go-cloud-k8s-common-libs/pkg/metadata"
 	"github.com/lao-tseu-is-alive/go-cloud-k8s-common-libs/pkg/tools"
 	"github.com/prometheus/client_golang/prometheus"
-	"https://github.com/lao-tseu-is-alive/go-cloud-k8s-auth/gen/auth/v1/authv1connect"
-	"https://github.com/lao-tseu-is-alive/go-cloud-k8s-auth/pkg/auth"
-	"https://github.com/lao-tseu-is-alive/go-cloud-k8s-auth/pkg/version"
 )
 
 const (

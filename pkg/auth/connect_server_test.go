@@ -8,10 +8,10 @@ import (
 
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
+	go_cloud_authv1 "github.com/lao-tseu-is-alive/go-cloud-k8s-auth/gen/go_cloud_auth/v1"
 	"github.com/lao-tseu-is-alive/go-cloud-k8s-common-libs/pkg/golog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	go_cloud_authv1 "https://github.com/lao-tseu-is-alive/go-cloud-k8s-auth/gen/go_cloud_auth/v1"
 )
 
 // =============================================================================
