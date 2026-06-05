@@ -5,26 +5,26 @@ var (
 	// -----------------------------------------------------
 
 	// AppName  is the CamelCase name of your app (e.g., "User", "Product")
-	AppName = "template4YourProjectName"
+	AppName = "goCloudAuth"
 
 	// GoPackage  is the name of your main service go package (e.g., "user", "product")
 	// should be: all lowercase, short no hyphens, no underscores, no camelCase, usually one word
-	GoPackage = "template4gopackage"
+	GoPackage = "auth"
 
 	// ServiceName is the name of your main entity/service first letter Capital (e.g., "User", "Product")
-	ServiceName = "Template4ServiceName"
+	ServiceName = "Auth"
 
 	// DbSchemaName is the name of your main entity/service database schema can be the same as go package
-	DbSchemaName = "template_4_your_project_name_db_schema"
+	DbSchemaName = "go_auth_db_schema"
 
 	// AppNameKebab is the kebab-case version for your github repository (e.g., "user", "product")
-	AppNameKebab = "template-4-your-project-name"
+	AppNameKebab = "go-cloud-auth"
 
 	// AppNameSnake is the snake-case version for database or directory (e.g., "user", "product")
-	AppNameSnake = "template_4_your_project_name"
+	AppNameSnake = "go_cloud_auth"
 
 	// Repository is the full GitHub repo URL
-	Repository = "https://github.com/your-github-account/template-4-your-project-name"
+	Repository = "https://github.com/lao-tseu-is-alive/go-cloud-k8s-auth"
 
 	// Version starting point
 	Version = "0.0.1"

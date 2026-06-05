@@ -1,0 +1,587 @@
+swagger: "2.0"
+info:
+  title: auth/v1/auth.proto
+  version: version not set
+tags:
+  - name: AuthService
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  /auth:
+    get:
+      summary: |-
+        List returns a list of auths.
+        Returns the auth in an array.
+      operationId: List
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1ListResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: limit
+          description: maximum number of results to return
+          in: query
+          required: false
+          type: integer
+          format: int32
+        - name: offset
+          description: offset rows to skip before returning rows
+          in: query
+          required: false
+          type: integer
+          format: int32
+        - name: type
+          description: TypeAuth id to filter by the auths to return
+          in: query
+          required: false
+          type: integer
+          format: int32
+        - name: createdBy
+          description: id of the creator to filter by the auths to return
+          in: query
+          required: false
+          type: integer
+          format: int32
+        - name: inactivated
+          description: inactivated flag to filter the auths to return
+          in: query
+          required: false
+          type: boolean
+        - name: validated
+          description: validation flag to filter the auths to return
+          in: query
+          required: false
+          type: boolean
+      tags:
+        - AuthService
+    post:
+      summary: |-
+        Create creates a new auth.
+        Creates a new auth.
+      operationId: Create
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1CreateResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: auth
+          description: Auth to add
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/v1Auth'
+      tags:
+        - AuthService
+  /auth/by-external-id/{externalId}:
+    get:
+      summary: |-
+        ListByExternalId returns a list of auth filtered by externalId.
+        Returns the auths in an array.
+      operationId: ListByExternalId
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1ListByExternalIdResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: externalId
+          description: externalId of the auths needed
+          in: path
+          required: true
+          type: integer
+          format: int32
+        - name: limit
+          in: query
+          required: false
+          type: integer
+          format: int32
+        - name: offset
+          in: query
+          required: false
+          type: integer
+          format: int32
+      tags:
+        - AuthService
+  /auth/count:
+    get:
+      summary: |-
+        Count returns the number of auth based on search criterias.
+        Returns the number of auths found after filtering with passed criterias.
+      operationId: Count
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1CountResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: keywords
+          in: query
+          required: false
+          type: string
+        - name: type
+          in: query
+          required: false
+          type: integer
+          format: int32
+        - name: createdBy
+          in: query
+          required: false
+          type: integer
+          format: int32
+        - name: inactivated
+          in: query
+          required: false
+          type: boolean
+        - name: validated
+          in: query
+          required: false
+          type: boolean
+      tags:
+        - AuthService
+  /auth/geojson:
+    get:
+      summary: |-
+        List returns a geoJson of auths found.
+        Returns the geoJson of the auth selected by the given parameters.
+      operationId: GeoJson
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1GeoJsonResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          type: integer
+          format: int32
+        - name: offset
+          in: query
+          required: false
+          type: integer
+          format: int32
+        - name: type
+          in: query
+          required: false
+          type: integer
+          format: int32
+        - name: createdBy
+          in: query
+          required: false
+          type: integer
+          format: int32
+        - name: inactivated
+          in: query
+          required: false
+          type: boolean
+        - name: validated
+          in: query
+          required: false
+          type: boolean
+      tags:
+        - AuthService
+  /auth/search:
+    get:
+      summary: |-
+        Search returns a list of auth based on search criterias.
+        Returns the auth in an array.
+      operationId: Search
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1SearchResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: keywords
+          description: text keywords to filter the auths to return
+          in: query
+          required: false
+          type: string
+        - name: limit
+          in: query
+          required: false
+          type: integer
+          format: int32
+        - name: offset
+          in: query
+          required: false
+          type: integer
+          format: int32
+        - name: type
+          in: query
+          required: false
+          type: integer
+          format: int32
+        - name: createdBy
+          in: query
+          required: false
+          type: integer
+          format: int32
+        - name: inactivated
+          in: query
+          required: false
+          type: boolean
+        - name: validated
+          in: query
+          required: false
+          type: boolean
+      tags:
+        - AuthService
+  /auth/{id}:
+    get:
+      summary: |-
+        Get retrieves in backend all information about a specific authId.
+        Retrieve a specific auth.
+      operationId: Get
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1GetResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: id
+          description: Id of the auth
+          in: path
+          required: true
+          type: string
+      tags:
+        - AuthService
+    delete:
+      summary: |-
+        Delete allows to delete a specific authId.
+        delete a auth.
+      operationId: Delete
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1DeleteResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: id
+          description: Id of the auth
+          in: path
+          required: true
+          type: string
+      tags:
+        - AuthService
+    put:
+      summary: |-
+        Update allows to modify information about a specific authId.
+        Updates the status of a auth.
+      operationId: Update
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1UpdateResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: id
+          description: Id of the auth
+          in: path
+          required: true
+          type: string
+        - name: auth
+          description: informations related to the auth
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/v1Auth'
+      tags:
+        - AuthService
+definitions:
+  protobufAny:
+    type: object
+    properties:
+      '@type':
+        type: string
+    additionalProperties: {}
+  protobufNullValue:
+    type: string
+    enum:
+      - NULL_VALUE
+    default: NULL_VALUE
+    description: |-
+      `NullValue` is a singleton enumeration to represent the null value for the
+      `Value` type union.
+
+      The JSON representation for `NullValue` is JSON `null`.
+
+       - NULL_VALUE: Null value.
+  rpcStatus:
+    type: object
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
+      details:
+        type: array
+        items:
+          type: object
+          $ref: '#/definitions/protobufAny'
+  v1Auth:
+    type: object
+    properties:
+      id:
+        type: string
+        title: |-
+          identifiant uuid v4
+          cet Universally unique identifier (UUID) sera généré automatiquement pour vous
+      typeId:
+        type: integer
+        format: int32
+        title: |-
+          identifiant du type d'objet
+          FK sur la clé primaire du TypeAuth de cet objet
+      name:
+        type: string
+        title: nom de cet objet
+      description:
+        type: string
+        title: description
+      comment:
+        type: string
+        title: commentaire
+      externalId:
+        type: integer
+        format: int32
+        title: identifiant numérique externe
+      externalRef:
+        type: string
+        title: référence externe
+      buildAt:
+        type: string
+        format: date-time
+        title: date de construction
+      status:
+        type: string
+        title: Status (e.g. "Planifié", "En Construction", "Utilisé", "Abandonné", "Démoli")
+      containedBy:
+        type: string
+        title: contenu par (UUID)
+      containedByOld:
+        type: integer
+        format: int32
+      inactivated:
+        type: boolean
+        title: inactivé?
+      inactivatedTime:
+        type: string
+        format: date-time
+        title: date d'inactivation
+      inactivatedBy:
+        type: integer
+        format: int32
+        title: utilisateur ayant désactivé
+      inactivatedReason:
+        type: string
+        title: raison de'inactivation
+      validated:
+        type: boolean
+        title: validé?
+      validatedTime:
+        type: string
+        format: date-time
+        title: date de validation
+      validatedBy:
+        type: integer
+        format: int32
+        title: utiliateur ayant validé
+      managedBy:
+        type: integer
+        format: int32
+        title: utilisateur/groupe manager
+      createdAt:
+        type: string
+        format: date-time
+        title: |-
+          date création
+          date de création de cet enregistrement dans la base
+        readOnly: true
+      createdBy:
+        type: integer
+        format: int32
+        title: |-
+          utilisateur ayant créé cet enregistrement
+          identifiant de l'utilisateur ayant créé cet enregistrement
+      lastModifiedAt:
+        type: string
+        format: date-time
+        title: |-
+          date modification
+          date de la dernière modication de cet enregistrement
+        readOnly: true
+      lastModifiedBy:
+        type: integer
+        format: int32
+        title: |-
+          utilisateur ayant effectué la modification
+          utilisateur ayant effectué la dernière modication de cet enregistrement
+      deleted:
+        type: boolean
+        title: |-
+          effacé?
+          cet enregisrement a été marqué comme effacé
+      deletedAt:
+        type: string
+        format: date-time
+        title: |-
+          date effacé
+          date à laquelle cet enregisrement a été marqué comme effacé
+      deletedBy:
+        type: integer
+        format: int32
+        title: |-
+          utilisateur ayant effacé
+          utilisateur ayant demandé de marquer cet enregisrement comme effacé
+      moreData:
+        type: object
+        title: |-
+          Informations complémentaires
+          permet de stocker des attributs complémentaires au format json
+      posX:
+        type: number
+        format: double
+        title: Coordonnées X de cet objet
+      posY:
+        type: number
+        format: double
+        title: Coordonnées Y de cet objet
+    required:
+      - id
+      - typeId
+      - name
+      - inactivated
+      - createdBy
+      - deleted
+      - posX
+      - posY
+  v1AuthList:
+    type: object
+    properties:
+      id:
+        type: string
+      typeId:
+        type: integer
+        format: int32
+      name:
+        type: string
+      description:
+        type: string
+      externalId:
+        type: integer
+        format: int32
+      inactivated:
+        type: boolean
+      validated:
+        type: boolean
+      status:
+        type: string
+      createdBy:
+        type: integer
+        format: int32
+      createdAt:
+        type: string
+        format: date-time
+      posX:
+        type: number
+        format: double
+      posY:
+        type: number
+        format: double
+    title: A light version of Auth for lists
+  v1CountResponse:
+    type: object
+    properties:
+      count:
+        type: integer
+        format: int32
+  v1CreateResponse:
+    type: object
+    properties:
+      auth:
+        $ref: '#/definitions/v1Auth'
+  v1DeleteResponse:
+    type: object
+    title: Empty, maps to 204 No Content typically
+  v1GeoJsonResponse:
+    type: object
+    properties:
+      result:
+        type: string
+        title: Returns the geoJson of the auth selected by the givven parameters
+  v1GetResponse:
+    type: object
+    properties:
+      auth:
+        $ref: '#/definitions/v1Auth'
+  v1ListByExternalIdResponse:
+    type: object
+    properties:
+      auths:
+        type: array
+        items:
+          type: object
+          $ref: '#/definitions/v1AuthList'
+  v1ListResponse:
+    type: object
+    properties:
+      auths:
+        type: array
+        items:
+          type: object
+          $ref: '#/definitions/v1AuthList'
+  v1SearchResponse:
+    type: object
+    properties:
+      auths:
+        type: array
+        items:
+          type: object
+          $ref: '#/definitions/v1AuthList'
+  v1UpdateResponse:
+    type: object
+    properties:
+      auth:
+        $ref: '#/definitions/v1Auth'

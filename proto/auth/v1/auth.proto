@@ -1,0 +1,253 @@
+syntax = "proto3";
+
+package auth.v1;
+
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/empty.proto";
+
+option go_package = "github.com/lao-tseu-is-alive/go-cloud-k8s-auth/gen/auth/v1;authv1";
+
+
+// =========================================================
+// Service: Auth
+// Description: API to authenticate User
+// =========================================================
+service AuthService {
+  rpc StartOAuth(StartOAuthRequest) returns (StartOAuthResponse){
+    option (google.api.http) = {
+      post: "/v1/auth/start"
+      body: "*"
+    };
+  };
+  rpc OAuthCallback(OAuthCallbackRequest) returns (OAuthCallbackResponse){
+    option (google.api.http) = {
+      post: "/v1/auth/callback"
+      body: "*"
+    };
+  };
+  rpc ValidateToken(ValidateTokenRequest) returns (ValidateTokenResponse){
+    option (google.api.http) = {
+      post: "/v1/auth/validateToken"
+      body: "*"
+    };
+  };
+
+  rpc GetCurrentUser(google.protobuf.Empty) returns (User){
+    option (google.api.http) = {
+      get: "/v1/auth/currentUser"
+    };
+  };
+}
+// =========================================================
+// Service: User
+// Description: API to manage User
+// =========================================================
+service UserService {
+  // List returns a list of users.
+  // Returns the user in an array.
+  rpc List(ListRequest) returns (ListResponse) {
+    option (google.api.http) = {
+      get: "/user"
+    };
+  }
+
+  // Create creates a new user.
+  // Creates a new user.
+  rpc Create(CreateRequest) returns (CreateResponse) {
+    option (google.api.http) = {
+      post: "/user"
+      body: "user"
+    };
+  }
+
+  // Get retrieves in backend all information about a specific userId.
+  // Retrieve a specific user.
+  rpc Get(GetRequest) returns (GetResponse) {
+    option (google.api.http) = {
+      get: "/user/{id}"
+    };
+  }
+
+  // Update allows to modify information about a specific userId.
+  // Updates the status of a user.
+  rpc Update(UpdateRequest) returns (UpdateResponse) {
+    option (google.api.http) = {
+      put: "/user/{id}"
+      body: "user"
+    };
+  }
+
+  // Delete allows to delete a specific userId.
+  // delete a user.
+  rpc Delete(DeleteRequest) returns (DeleteResponse) {
+    option (google.api.http) = {
+      delete: "/user/{id}"
+    };
+  }
+
+  // Count returns the number of user based on search criterias.
+  // Returns the number of users found after filtering with passed criterias.
+  rpc Count(CountRequest) returns (CountResponse) {
+    option (google.api.http) = {
+      get: "/user/count"
+    };
+  }
+
+
+
+  // GetByExternalId returns a user having an externalId or nothing if not found.
+  // Returns the user.
+  rpc GetByExternalId(GetByExternalIdRequest) returns (GetByExternalIdResponse) {
+    option (google.api.http) = {
+      get: "/user/by-external-id/{external_id}"
+    };
+  }
+}
+
+
+// Messages principaux
+message User {
+  // identifiant uuid v4
+  // cet Universally unique identifier (UUID) sera généré automatiquement pour vous
+  string id = 1 [(google.api.field_behavior) = REQUIRED];
+  // identifiant numérique externe legacy
+  int64 external_id = 2;
+  string email = 3 [(google.api.field_behavior) = REQUIRED];
+  string name = 4 [(google.api.field_behavior) = REQUIRED];
+  string avatar_url = 5;
+  string provider = 6;
+  bool disabled = 7 [(google.api.field_behavior) = REQUIRED];
+  repeated string roles = 8;
+  // date de création de cet enregistrement dans la base
+  google.protobuf.Timestamp created_at = 9  [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp last_login_at = 10 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+message Group {
+  string id = 1;
+  string name = 2;
+  string owner_id = 3;
+  bool is_personal = 4;
+}
+
+// A light version of User for lists
+message UserList {
+  string id = 1 [(google.api.field_behavior) = REQUIRED];
+  int64 external_id = 2;
+  string email = 3 [(google.api.field_behavior) = REQUIRED];
+  string name = 4 [(google.api.field_behavior) = REQUIRED];
+  bool disabled = 5 [(google.api.field_behavior) = REQUIRED];
+  google.protobuf.Timestamp created_at = 6  [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp last_login_at = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+}
+
+
+// =========================================================
+// Requests & Responses
+// =========================================================
+
+message ListRequest {
+  // maximum number of results to return
+  int32 limit = 1;
+  // offset rows to skip before returning rows
+  int32 offset = 2;
+  // inactivated flag to filter the users to return
+  bool disabled = 3;
+}
+
+message ListResponse {
+  repeated UserList users = 1;
+}
+
+message CreateRequest {
+  // User to add
+  User user = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message CreateResponse {
+  User user = 1;
+}
+
+message GetRequest {
+  // Id of the user
+  string id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message GetResponse {
+  User user = 1;
+}
+
+message UpdateRequest {
+  // Id of the user
+  string id = 1 [(google.api.field_behavior) = REQUIRED];
+  // informations related to the user
+  User user = 2 [(google.api.field_behavior) = REQUIRED];
+}
+
+message UpdateResponse {
+  User user = 1;
+}
+
+message DeleteRequest {
+  // Id of the user
+  string id = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message DeleteResponse {
+  // Empty, maps to 204 No Content typically
+}
+
+message CountRequest {
+  bool inactivated = 4;
+}
+
+message CountResponse {
+  int32 count = 1;
+}
+
+message GetByExternalIdRequest {
+  // externalId of the user needed
+  int32 external_id = 1 [(google.api.field_behavior) = REQUIRED];
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message GetByExternalIdResponse {
+  User user = 1;
+}
+
+// OAuth Login Flow
+message StartOAuthRequest {
+  string provider = 1; // google, github, microsoft
+  string redirect_url = 2; // optionnel
+}
+
+message StartOAuthResponse {
+  string auth_url = 1;
+  string state = 2; // anti-CSRF
+}
+
+message OAuthCallbackRequest {
+  string provider = 1;
+  string code = 2;
+  string state = 3;
+}
+
+message OAuthCallbackResponse {
+  string jwt = 1;
+  User user = 2;
+}
+
+// Token validation
+message ValidateTokenRequest {
+  string token = 1;
+}
+
+message ValidateTokenResponse {
+  bool valid = 1;
+  User user = 2;
+}
+

@@ -18,12 +18,12 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 # Copy the source from the current directory to the Working Directory inside the container
-COPY cmd/template4YourProjectNameServer ./template4YourProjectNameServer
+COPY cmd/goCloudAuthServer ./goCloudAuthServer
 COPY pkg ./pkg
 COPY gen ./gen
 
 # Build the Go app
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o template4YourProjectNameServer ./template4YourProjectNameServer
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o goCloudAuthServer ./goCloudAuthServer
 
 
 ######## Start a new stage  #######
@@ -42,7 +42,7 @@ USER 1221:1221
 WORKDIR /goapp
 
 # Copy the Pre-built binary file from the previous stage
-COPY --from=builder /app/template4YourProjectNameServer .
+COPY --from=builder /app/goCloudAuthServer .
 
 ENV PORT="${PORT}"
 ENV DB_DRIVER="${DB_DRIVER}"
@@ -63,7 +63,7 @@ ENV ADMIN_EXTERNAL_ID="${ADMIN_EXTERNAL_ID}"
 ENV ADMIN_PASSWORD="${ADMIN_PASSWORD}"
 ENV ALLOWED_HOSTS="${ALLOWED_HOSTS}"
 ENV APP_ENV="${APP_ENV}"
-# Expose port  to the outside world, template4YourProjectName will use the env PORT as listening port or 8080 as default
+# Expose port  to the outside world, goCloudAuth will use the env PORT as listening port or 8080 as default
 EXPOSE 9090
 
 # how to check if container is ok https://docs.docker.com/engine/reference/builder/#healthcheck
@@ -72,4 +72,4 @@ HEALTHCHECK --start-period=5s --interval=30s --timeout=3s \
 
 
 # Command to run the executable
-CMD ["./template4YourProjectNameServer"]
+CMD ["./goCloudAuthServer"]

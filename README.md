@@ -1,14 +1,14 @@
-[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=your-github-account_template-4-your-project-name&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=your-github-account_template-4-your-project-name)
-[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=your-github-account_template-4-your-project-name&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=your-github-account_template-4-your-project-name)
-[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=your-github-account_template-4-your-project-name&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=your-github-account_template-4-your-project-name)
-[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=your-github-account_template-4-your-project-name&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=your-github-account_template-4-your-project-name)
-[![test](https://github.com/your-github-account/template-4-your-project-name/actions/workflows/test.yml/badge.svg)](https://github.com/your-github-account/template-4-your-project-name/actions/workflows/test.yml)
-[![cve-trivy-scan](https://github.com/your-github-account/template-4-your-project-name/actions/workflows/cve-trivy-scan.yml/badge.svg)](https://github.com/your-github-account/template-4-your-project-name/actions/workflows/cve-trivy-scan.yml)
-[![codecov](https://codecov.io/gh/your-github-account/template-4-your-project-name/branch/main/graph/badge.svg?token=02AHW79CES)](https://codecov.io/gh/your-github-account/template-4-your-project-name)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=your-github-account_go-cloud-auth&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=your-github-account_go-cloud-auth)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=your-github-account_go-cloud-auth&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=your-github-account_go-cloud-auth)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=your-github-account_go-cloud-auth&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=your-github-account_go-cloud-auth)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=your-github-account_go-cloud-auth&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=your-github-account_go-cloud-auth)
+[![test](https://https://github.com/lao-tseu-is-alive/go-cloud-k8s-auth/actions/workflows/test.yml/badge.svg)](https://https://github.com/lao-tseu-is-alive/go-cloud-k8s-auth/actions/workflows/test.yml)
+[![cve-trivy-scan](https://https://github.com/lao-tseu-is-alive/go-cloud-k8s-auth/actions/workflows/cve-trivy-scan.yml/badge.svg)](https://https://github.com/lao-tseu-is-alive/go-cloud-k8s-auth/actions/workflows/cve-trivy-scan.yml)
+[![codecov](https://codecov.io/gh/your-github-account/go-cloud-auth/branch/main/graph/badge.svg?token=02AHW79CES)](https://codecov.io/gh/your-github-account/go-cloud-auth)
 
-# 🚀 template-4-your-project-name
+# 🚀 go-cloud-auth
 
-A modern **Proto-first** microservice for managing "template4YourProjectNames" — built with Go, gRPC, ConnectRPC, and designed for cloud-native Kubernetes deployments.
+A modern **Proto-first** microservice for managing "goCloudAuths" — built with Go, gRPC, ConnectRPC, and designed for cloud-native Kubernetes deployments.
 
 > **Proto as Source of Truth**: API contracts are defined in Protocol Buffers, generating both Go code and OpenAPI specs automatically. Clients can connect via REST, gRPC, or Connect protocols.
 
@@ -28,7 +28,7 @@ A modern **Proto-first** microservice for managing "template4YourProjectNames" �
 ```mermaid
 graph TB
     subgraph Clients["📱 Clients"]
-        REST["🌐 REST<br/>GET /goapi/v1/template_4_your_project_name"]
+        REST["🌐 REST<br/>GET /goapi/v1/go_cloud_auth"]
         CONNECT["⚡ Connect<br/>JSON / Proto"]
         GRPC["🔌 gRPC"]
     end
@@ -36,8 +36,8 @@ graph TB
     subgraph Server["🖥️ Echo Server"]
         VG["🔄 Vanguard Transcoder"]
         subgraph Services["Connect Services"]
-            TS["template4YourProjectNameService"]
-            TTS["Typetemplate4YourProjectNameService"]
+            TS["goCloudAuthService"]
+            TTS["TypegoCloudAuthService"]
         end
     end
     
@@ -68,18 +68,18 @@ graph TB
 The API is defined using **Protocol Buffers** as the single source of truth:
 
 ```
-api/proto/template_4_your_project_name/v1/
-├── template_4_your_project_name.proto           # template4YourProjectNameService definitions
-└── type_template_4_your_project_name.proto      # Typetemplate4YourProjectNameService definitions
+api/proto/go_cloud_auth/v1/
+├── go_cloud_auth.proto           # goCloudAuthService definitions
+└── type_go_cloud_auth.proto      # TypegoCloudAuthService definitions
 ```
 
 ### Generated Artifacts
 
 | Source | Generated | Purpose |
 |--------|-----------|---------|
-| `.proto` files | `gen/template_4_your_project_name/v1/*.go` | Go types & gRPC stubs |
-| `.proto` files | `gen/template_4_your_project_name/v1/template_4_your_project_namev1connect/*.go` | Connect handlers |
-| `.proto` files | `api/openapi/template_4_your_project_name.yaml` | OpenAPI 3.0 spec |
+| `.proto` files | `gen/go_cloud_auth/v1/*.go` | Go types & gRPC stubs |
+| `.proto` files | `gen/go_cloud_auth/v1/go_cloud_authv1connect/*.go` | Connect handlers |
+| `.proto` files | `api/openapi/go_cloud_auth.yaml` | OpenAPI 3.0 spec |
 
 ### Regenerate Code
 
@@ -95,35 +95,35 @@ buf generate api/proto
 
 All endpoints are prefixed with `/goapi/v1` and require JWT authentication.
 
-### template4YourProjectName Resources
+### goCloudAuth Resources
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `GET` | `/goapi/v1/template_4_your_project_name` | List template_4_your_project_names |
-| `POST` | `/goapi/v1/template_4_your_project_name` | Create a template_4_your_project_name |
-| `GET` | `/goapi/v1/template_4_your_project_name/{id}` | Get template_4_your_project_name by ID |
-| `PUT` | `/goapi/v1/template_4_your_project_name/{id}` | Update a template_4_your_project_name |
-| `DELETE` | `/goapi/v1/template_4_your_project_name/{id}` | Delete a template_4_your_project_name |
-| `GET` | `/goapi/v1/template_4_your_project_name/search` | Search template_4_your_project_names |
-| `GET` | `/goapi/v1/template_4_your_project_name/count` | Count template_4_your_project_names |
-| `GET` | `/goapi/v1/template_4_your_project_name/geojson` | Get GeoJSON |
+| `GET` | `/goapi/v1/go_cloud_auth` | List go_cloud_auths |
+| `POST` | `/goapi/v1/go_cloud_auth` | Create a go_cloud_auth |
+| `GET` | `/goapi/v1/go_cloud_auth/{id}` | Get go_cloud_auth by ID |
+| `PUT` | `/goapi/v1/go_cloud_auth/{id}` | Update a go_cloud_auth |
+| `DELETE` | `/goapi/v1/go_cloud_auth/{id}` | Delete a go_cloud_auth |
+| `GET` | `/goapi/v1/go_cloud_auth/search` | Search go_cloud_auths |
+| `GET` | `/goapi/v1/go_cloud_auth/count` | Count go_cloud_auths |
+| `GET` | `/goapi/v1/go_cloud_auth/geojson` | Get GeoJSON |
 
-### Typetemplate4YourProjectName Resources
+### TypegoCloudAuth Resources
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `GET` | `/goapi/v1/types` | List type template_4_your_project_names |
-| `POST` | `/goapi/v1/types` | Create type template_4_your_project_name |
-| `GET` | `/goapi/v1/types/{id}` | Get type template_4_your_project_name by ID |
-| `PUT` | `/goapi/v1/types/{id}` | Update type template_4_your_project_name |
-| `DELETE` | `/goapi/v1/types/{id}` | Delete type template_4_your_project_name |
-| `GET` | `/goapi/v1/types/count` | Count type template_4_your_project_names |
+| `GET` | `/goapi/v1/types` | List type go_cloud_auths |
+| `POST` | `/goapi/v1/types` | Create type go_cloud_auth |
+| `GET` | `/goapi/v1/types/{id}` | Get type go_cloud_auth by ID |
+| `PUT` | `/goapi/v1/types/{id}` | Update type go_cloud_auth |
+| `DELETE` | `/goapi/v1/types/{id}` | Delete type go_cloud_auth |
+| `GET` | `/goapi/v1/types/count` | Count type go_cloud_auths |
 
 ### Connect RPC Endpoints
 
 ```bash
 # Connect JSON format
-curl -X POST http://localhost:9090/template_4_your_project_name.v1.template4YourProjectNameService/List \
+curl -X POST http://localhost:9090/go_cloud_auth.v1.goCloudAuthService/List \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $TOKEN" \
   -d '{"limit": 10}'
@@ -146,7 +146,7 @@ curl -X POST http://localhost:9090/template_4_your_project_name.v1.template4Your
 export PORT=9090
 export DB_HOST=localhost
 export DB_PORT=5432
-export DB_NAME=template_4_your_project_name
+export DB_NAME=go_cloud_auth
 export DB_USER=your_user
 export DB_PASSWORD=your_password
 export JWT_SECRET=your_jwt_secret
@@ -163,7 +163,7 @@ go mod download
 # (migrations are auto-applied on startup)
 
 # Start the server
-go run ./cmd/template4YourProjectNameServer
+go run ./cmd/goCloudAuthServer
 ```
 
 ### Run Tests
@@ -179,23 +179,23 @@ make test
 ### Pull from GitHub Container Registry
 
 ```bash
-docker pull ghcr.io/your-github-account/template-4-your-project-name:latest
+docker pull ghcr.io/your-github-account/go-cloud-auth:latest
 ```
 
 ### Build Locally
 
 ```bash
-docker build -t template-4-your-project-name .
+docker build -t go-cloud-auth .
 ```
 
-Find all available versions in the [Packages section](https://github.com/your-github-account/template-4-your-project-name/pkgs/container/template-4-your-project-name).
+Find all available versions in the [Packages section](https://https://github.com/lao-tseu-is-alive/go-cloud-k8s-auth/pkgs/container/go-cloud-auth).
 
 ---
 
 ## 📚 Documentation
 
 - 📋 [Requirements](./documentation/Requirements.md) — Functional and system requirements
-- 🔗 [OpenAPI Spec (YAML)](./api/openapi/template_4_your_project_name.yaml) — Generated from proto
+- 🔗 [OpenAPI Spec (YAML)](./api/openapi/go_cloud_auth.yaml) — Generated from proto
 
 ---
 
@@ -218,16 +218,16 @@ Find all available versions in the [Packages section](https://github.com/your-gi
 ## 📁 Project Structure
 
 ```
-template-4-your-project-name/
+go-cloud-auth/
 ├── api/
-│   ├── proto/template_4_your_project_name/v1/          # 📋 Proto definitions (source of truth)
+│   ├── proto/go_cloud_auth/v1/          # 📋 Proto definitions (source of truth)
 │   └── openapi/                  # 📄 Generated OpenAPI specs
 ├── cmd/
-│   └── template4YourProjectNameServer/   # 🚀 Main application entry point
+│   └── goCloudAuthServer/   # 🚀 Main application entry point
 ├── gen/
-│   └── template_4_your_project_name/v1/                # ⚙️ Generated Go code from protos
+│   └── go_cloud_auth/v1/                # ⚙️ Generated Go code from protos
 ├── pkg/
-│   └── template_4_your_project_name/                   # 📦 Business logic
+│   └── go_cloud_auth/                   # 📦 Business logic
 │       ├── business_service.go  # Core business operations
 │       ├── connect_server.go    # Connect RPC handlers
 │       ├── mappers.go           # Domain ↔ Proto conversion

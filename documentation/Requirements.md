@@ -12,30 +12,30 @@ The application should be usable as a _web app_ and use the
 
 ### Functional requirements (FR)
 
-1. Allow CRUD operation on template4YourProjectName.
-2. List template4YourProjectNames filtering by type and creator.
-3. Search template4YourProjectNames by keywords, type, creator.
-4. Allow retrieving a template4YourProjectName by an external Id.
-5. Restrict template4YourProjectName Create,Modify and Delete to some groups/roles by Type of template4YourProjectNames, and for specific template4YourProjectName.
-6. Get number (count) of template4YourProjectNames by type.
-7. Allow CRUD operation on Typetemplate4YourProjectName.
-8. List Typetemplate4YourProjectName filtering by creator.
-9. Restrict Typetemplate4YourProjectName Create,Modify and Delete to some the role template4YourProjectName Administrator.
-10. Get number (count) of Typetemplate4YourProjectNames by type.
-11. Keep automatically track of when and who creates a template4YourProjectName.
-12. Keep automatically track of when was done the last modification to a template4YourProjectName and who has done it
-13. Keep automatically track of when and who  deletes a template4YourProjectName, mark the template4YourProjectName as deleted but do not remove the record from the database. The usual list and search should not return a record of template4YourProjectName marked for deletion
-15. Include the current status of a template4YourProjectName as an Enum attribute
-16. Allow a record of a template4YourProjectName to be "inactive"
-17. Keep track of when and who someone mark a template4YourProjectName as inactive, allow to enter an inactivation reason
-18. Allow a record of a template4YourProjectName to be "validated"
-19. Keep track of when and who someone validates a template4YourProjectName
-20. Allow a template4YourProjectName to have an attribute managed_by
-21. Keep automatically track of when and who creates a Typetemplate4YourProjectName.
-22. Keep automatically track of when was done the last modification to a Typetemplate4YourProjectName and who has done it
-23. Keep automatically track of when and who  deletes a Typetemplate4YourProjectName, mark the template4YourProjectName as deleted but do not remove the record from the database. The usual list and search should not return a record of Typetemplate4YourProjectName marked for deletion.
-24. Allow a record of a Typetemplate4YourProjectName to be "inactive"
-25. Keep track of when and who someone mark a Typetemplate4YourProjectName as inactive, allow to enter an inactivation reason
+1. Allow CRUD operation on goCloudAuth.
+2. List goCloudAuths filtering by type and creator.
+3. Search goCloudAuths by keywords, type, creator.
+4. Allow retrieving a goCloudAuth by an external Id.
+5. Restrict goCloudAuth Create,Modify and Delete to some groups/roles by Type of goCloudAuths, and for specific goCloudAuth.
+6. Get number (count) of goCloudAuths by type.
+7. Allow CRUD operation on TypegoCloudAuth.
+8. List TypegoCloudAuth filtering by creator.
+9. Restrict TypegoCloudAuth Create,Modify and Delete to some the role goCloudAuth Administrator.
+10. Get number (count) of TypegoCloudAuths by type.
+11. Keep automatically track of when and who creates a goCloudAuth.
+12. Keep automatically track of when was done the last modification to a goCloudAuth and who has done it
+13. Keep automatically track of when and who  deletes a goCloudAuth, mark the goCloudAuth as deleted but do not remove the record from the database. The usual list and search should not return a record of goCloudAuth marked for deletion
+15. Include the current status of a goCloudAuth as an Enum attribute
+16. Allow a record of a goCloudAuth to be "inactive"
+17. Keep track of when and who someone mark a goCloudAuth as inactive, allow to enter an inactivation reason
+18. Allow a record of a goCloudAuth to be "validated"
+19. Keep track of when and who someone validates a goCloudAuth
+20. Allow a goCloudAuth to have an attribute managed_by
+21. Keep automatically track of when and who creates a TypegoCloudAuth.
+22. Keep automatically track of when was done the last modification to a TypegoCloudAuth and who has done it
+23. Keep automatically track of when and who  deletes a TypegoCloudAuth, mark the goCloudAuth as deleted but do not remove the record from the database. The usual list and search should not return a record of TypegoCloudAuth marked for deletion.
+24. Allow a record of a TypegoCloudAuth to be "inactive"
+25. Keep track of when and who someone mark a TypegoCloudAuth as inactive, allow to enter an inactivation reason
 
 ### System requirements (SR)
 

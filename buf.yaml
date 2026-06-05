@@ -1,0 +1,17 @@
+# For details on buf.yaml configuration, visit https://buf.build/docs/configuration/v2/buf-yaml
+version: v2
+modules:
+  - path: proto
+
+#name: github.com/lao-tseu-is-alive/go-cloud-k8s-auth
+
+deps:
+  - buf.build/bufbuild/protovalidate
+  - buf.build/googleapis/googleapis
+  - buf.build/grpc-ecosystem/grpc-gateway   # utile pour les annotations http
+lint:
+  use:
+    - STANDARD
+breaking:
+  use:
+    - FILE

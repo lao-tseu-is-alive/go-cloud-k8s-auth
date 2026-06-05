@@ -18,8 +18,8 @@ else
 	DB_DRIVER ?= postgres
 	DB_HOST ?= 127.0.0.1
 	DB_PORT ?= 5432
-	DB_NAME ?= template_4_your_project_name
-	DB_USER ?= template_4_your_project_name
+	DB_NAME ?= go_cloud_auth
+	DB_USER ?= go_cloud_auth
 	# DB_PASSWORD should be defined in your env or in github secrets
 	DB_SSL_MODE ?= disable
 endif
@@ -69,11 +69,11 @@ exec-bin: bin/$(APP_EXECUTABLE)
 
 
 ## old test using
- # go test -c -coverpkg=$(go list github.com/your-github-account/template-4-your-project-name/...|tr "\n" ",") -race -covermode=atomic -o ./___template4YourProjectNameServer_test_go.test ./...; \
- #	go tool test2json -t ./___template4YourProjectNameServer_test_go.test -test.v -test.paniconexit0 -test.run ^\QTestMainExec\E -test.coverprofile coverage.out
- # GOROOT=/usr/local/go GOPATH=/home/cgil/go /usr/local/go/bin/go test -c -coverpkg=../../../template-4-your-project-name/... -covermode=atomic -o ./___template4YourProjectNameServer_test_go.test github.com/your-github-account/template-4-your-project-name/cmd/template4YourProjectNameServer; \
-    #	go tool test2json -t ./___template4YourProjectNameServer_test_go.test -test.v -test.paniconexit0 -test.run ^\QTestMainExec\E$$ -test.coverprofile ./coverage.out
- # go test -race -coverprofile coverage.out -coverpkg=$(go list github.com/your-github-account/template-4-your-project-name/...|tr "\n" ",") ./...
+ # go test -c -coverpkg=$(go list https://github.com/lao-tseu-is-alive/go-cloud-k8s-auth/...|tr "\n" ",") -race -covermode=atomic -o ./___goCloudAuthServer_test_go.test ./...; \
+ #	go tool test2json -t ./___goCloudAuthServer_test_go.test -test.v -test.paniconexit0 -test.run ^\QTestMainExec\E -test.coverprofile coverage.out
+ # GOROOT=/usr/local/go GOPATH=/home/cgil/go /usr/local/go/bin/go test -c -coverpkg=../../../go-cloud-auth/... -covermode=atomic -o ./___goCloudAuthServer_test_go.test https://github.com/lao-tseu-is-alive/go-cloud-k8s-auth/cmd/goCloudAuthServer; \
+    #	go tool test2json -t ./___goCloudAuthServer_test_go.test -test.v -test.paniconexit0 -test.run ^\QTestMainExec\E$$ -test.coverprofile ./coverage.out
+ # go test -race -coverprofile coverage.out -coverpkg=$(go list https://github.com/lao-tseu-is-alive/go-cloud-k8s-auth/...|tr "\n" ",") ./...
 
 
 # Check if .env_testing exists and include it if it does
@@ -123,7 +123,7 @@ endif
 ## clean:	will delete you server app binary and remove temporary files like coverage output
 clean:
 	@echo "  >  Removing $(APP_EXECUTABLE) from bin directory..."
-	rm -rf bin/$(APP_EXECUTABLE) coverage.out coverage-all.out ___template4YourProjectNameServer_test_go.test
+	rm -rf bin/$(APP_EXECUTABLE) coverage.out coverage-all.out ___goCloudAuthServer_test_go.test
 
 .PHONY: release
 ## release:	will build & tag a clean repo with a version release and push the tag to the remote git
@@ -167,7 +167,7 @@ endif
 .PHONY: openapi-codegen
 ## openapi-codegen:	will generate helper Go code for types & server based on OpenApi spec in api/app.yml
 openapi-codegen: dependencies-openapi
-	oapi-codegen --old-config-style -generate types -o pkg/template_4_your_project_name/template_4_your_project_name_types.gen.go -package template_4_your_project_name api/openapi/template_4_your_project_name.swagger.yaml
+	oapi-codegen --old-config-style -generate types -o pkg/go_cloud_auth/go_cloud_auth_types.gen.go -package go_cloud_auth api/openapi/go_cloud_auth.swagger.yaml
 
 
 .PHONY: build-container-image
@@ -180,8 +180,8 @@ build-container-image:
 .PHONY: xo-codegen
 ## xo-codegen:	will generate helper Go code for database queries in models directory
 xo-codegen: dependencies-xo
-	xo schema schema -s public --go-pkg=template_4_your_project_name --src templates_xo -o models ${DB_DRIVER}://${DB_USER}:=@${DB_HOST}/${DB_NAME}
-	#xo schema schema -s public --go-pkg=template_4_your_project_name --src templates_xo -o pkg/template_4_your_project_name ${DB_DRIVER}://${DB_USER}:=@${DB_HOST}/${DB_NAME}
+	xo schema schema -s public --go-pkg=go_cloud_auth --src templates_xo -o models ${DB_DRIVER}://${DB_USER}:=@${DB_HOST}/${DB_NAME}
+	#xo schema schema -s public --go-pkg=go_cloud_auth --src templates_xo -o pkg/go_cloud_auth ${DB_DRIVER}://${DB_USER}:=@${DB_HOST}/${DB_NAME}
 
 .PHONY: help
 help: Makefile
