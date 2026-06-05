@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"connectrpc.com/connect"
+	"github.com/lao-tseu-is-alive/go-cloud-k8s-auth/gen/auth/v1/authv1connect"
 	"github.com/lao-tseu-is-alive/go-cloud-k8s-common-libs/pkg/goHttpEcho"
 )
 
@@ -20,22 +21,28 @@ const (
 	userInfoKey authContextKey = "auth_user_info"
 )
 
-// NewAuthInterceptor AuthInterceptor creates a Connect unary interceptor that validates JWT tokens
+// publicProcedures lists Connect RPC procedures that do NOT require authentication.
+// These are the OAuth flow endpoints and token validation.
+var publicProcedures = map[string]bool{
+	authv1connect.AuthServiceStartOAuthProcedure:    true,
+	authv1connect.AuthServiceOAuthCallbackProcedure: true,
+	authv1connect.AuthServiceValidateTokenProcedure: true,
+}
+
+// NewAuthInterceptor creates a Connect unary interceptor that validates JWT tokens
 // and injects user information into the request context.
 //
-// This interceptor:
-// 1. Extracts the JWT from the Authorization header (Bearer token)
-// 2. Validates the token using the provided JwtChecker
-// 3. Injects userId and isAdmin into the context
-// 4. Rejects unauthenticated requests with CodeUnauthenticated
-//
-// Usage:
-//
-//	interceptors := connect.WithInterceptors(NewAuthInterceptor(jwtCheck, log))
-//	handler := authv1connect.NewAuthServiceHandler(server, interceptors)
+// Public procedures (StartOAuth, OAuthCallback, ValidateToken) are exempt from auth.
 func NewAuthInterceptor(jwtCheck goHttpEcho.JwtChecker, log *slog.Logger) connect.UnaryInterceptorFunc {
 	return func(next connect.UnaryFunc) connect.UnaryFunc {
 		return func(ctx context.Context, req connect.AnyRequest) (connect.AnyResponse, error) {
+			// Check if this procedure is public (no auth required)
+			procedure := req.Spec().Procedure
+			if publicProcedures[procedure] {
+				log.Debug("AuthInterceptor: skipping auth for public procedure", "procedure", procedure)
+				return next(ctx, req)
+			}
+
 			// Extract Authorization header
 			auth := req.Header().Get("Authorization")
 			if auth == "" {
@@ -67,8 +74,6 @@ func NewAuthInterceptor(jwtCheck goHttpEcho.JwtChecker, log *slog.Logger) connec
 }
 
 // GetUserFromContext extracts user information from the context.
-// This should be called from RPC handlers after the AuthInterceptor has run.
-//
 // Returns userId (0 if not found) and isAdmin (false if not found).
 func GetUserFromContext(ctx context.Context) (userId int32, isAdmin bool) {
 	if id, ok := ctx.Value(userIDKey).(int32); ok {

@@ -1,5 +1,6 @@
 package auth
 
 const (
-	MinNameLength = 5
+	MinNameLength  = 2
+	MinEmailLength = 5
 )

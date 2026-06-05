@@ -65,10 +65,10 @@ const (
 
 // AuthServiceClient is a client for the auth.v1.AuthService service.
 type AuthServiceClient interface {
-	StartOAuth(context.Context, *v1.StartOAuthRequest) (*v1.StartOAuthResponse, error)
-	OAuthCallback(context.Context, *v1.OAuthCallbackRequest) (*v1.OAuthCallbackResponse, error)
-	ValidateToken(context.Context, *v1.ValidateTokenRequest) (*v1.ValidateTokenResponse, error)
-	GetCurrentUser(context.Context, *v1.GetCurrentUserRequest) (*v1.GetCurrentUserResponse, error)
+	StartOAuth(context.Context, *connect.Request[v1.StartOAuthRequest]) (*connect.Response[v1.StartOAuthResponse], error)
+	OAuthCallback(context.Context, *connect.Request[v1.OAuthCallbackRequest]) (*connect.Response[v1.OAuthCallbackResponse], error)
+	ValidateToken(context.Context, *connect.Request[v1.ValidateTokenRequest]) (*connect.Response[v1.ValidateTokenResponse], error)
+	GetCurrentUser(context.Context, *connect.Request[v1.GetCurrentUserRequest]) (*connect.Response[v1.GetCurrentUserResponse], error)
 }
 
 // NewAuthServiceClient constructs a client for the auth.v1.AuthService service. By default, it uses
@@ -118,47 +118,31 @@ type authServiceClient struct {
 }
 
 // StartOAuth calls auth.v1.AuthService.StartOAuth.
-func (c *authServiceClient) StartOAuth(ctx context.Context, req *v1.StartOAuthRequest) (*v1.StartOAuthResponse, error) {
-	response, err := c.startOAuth.CallUnary(ctx, connect.NewRequest(req))
-	if response != nil {
-		return response.Msg, err
-	}
-	return nil, err
+func (c *authServiceClient) StartOAuth(ctx context.Context, req *connect.Request[v1.StartOAuthRequest]) (*connect.Response[v1.StartOAuthResponse], error) {
+	return c.startOAuth.CallUnary(ctx, req)
 }
 
 // OAuthCallback calls auth.v1.AuthService.OAuthCallback.
-func (c *authServiceClient) OAuthCallback(ctx context.Context, req *v1.OAuthCallbackRequest) (*v1.OAuthCallbackResponse, error) {
-	response, err := c.oAuthCallback.CallUnary(ctx, connect.NewRequest(req))
-	if response != nil {
-		return response.Msg, err
-	}
-	return nil, err
+func (c *authServiceClient) OAuthCallback(ctx context.Context, req *connect.Request[v1.OAuthCallbackRequest]) (*connect.Response[v1.OAuthCallbackResponse], error) {
+	return c.oAuthCallback.CallUnary(ctx, req)
 }
 
 // ValidateToken calls auth.v1.AuthService.ValidateToken.
-func (c *authServiceClient) ValidateToken(ctx context.Context, req *v1.ValidateTokenRequest) (*v1.ValidateTokenResponse, error) {
-	response, err := c.validateToken.CallUnary(ctx, connect.NewRequest(req))
-	if response != nil {
-		return response.Msg, err
-	}
-	return nil, err
+func (c *authServiceClient) ValidateToken(ctx context.Context, req *connect.Request[v1.ValidateTokenRequest]) (*connect.Response[v1.ValidateTokenResponse], error) {
+	return c.validateToken.CallUnary(ctx, req)
 }
 
 // GetCurrentUser calls auth.v1.AuthService.GetCurrentUser.
-func (c *authServiceClient) GetCurrentUser(ctx context.Context, req *v1.GetCurrentUserRequest) (*v1.GetCurrentUserResponse, error) {
-	response, err := c.getCurrentUser.CallUnary(ctx, connect.NewRequest(req))
-	if response != nil {
-		return response.Msg, err
-	}
-	return nil, err
+func (c *authServiceClient) GetCurrentUser(ctx context.Context, req *connect.Request[v1.GetCurrentUserRequest]) (*connect.Response[v1.GetCurrentUserResponse], error) {
+	return c.getCurrentUser.CallUnary(ctx, req)
 }
 
 // AuthServiceHandler is an implementation of the auth.v1.AuthService service.
 type AuthServiceHandler interface {
-	StartOAuth(context.Context, *v1.StartOAuthRequest) (*v1.StartOAuthResponse, error)
-	OAuthCallback(context.Context, *v1.OAuthCallbackRequest) (*v1.OAuthCallbackResponse, error)
-	ValidateToken(context.Context, *v1.ValidateTokenRequest) (*v1.ValidateTokenResponse, error)
-	GetCurrentUser(context.Context, *v1.GetCurrentUserRequest) (*v1.GetCurrentUserResponse, error)
+	StartOAuth(context.Context, *connect.Request[v1.StartOAuthRequest]) (*connect.Response[v1.StartOAuthResponse], error)
+	OAuthCallback(context.Context, *connect.Request[v1.OAuthCallbackRequest]) (*connect.Response[v1.OAuthCallbackResponse], error)
+	ValidateToken(context.Context, *connect.Request[v1.ValidateTokenRequest]) (*connect.Response[v1.ValidateTokenResponse], error)
+	GetCurrentUser(context.Context, *connect.Request[v1.GetCurrentUserRequest]) (*connect.Response[v1.GetCurrentUserResponse], error)
 }
 
 // NewAuthServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -168,25 +152,25 @@ type AuthServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewAuthServiceHandler(svc AuthServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	authServiceMethods := v1.File_auth_v1_auth_proto.Services().ByName("AuthService").Methods()
-	authServiceStartOAuthHandler := connect.NewUnaryHandlerSimple(
+	authServiceStartOAuthHandler := connect.NewUnaryHandler(
 		AuthServiceStartOAuthProcedure,
 		svc.StartOAuth,
 		connect.WithSchema(authServiceMethods.ByName("StartOAuth")),
 		connect.WithHandlerOptions(opts...),
 	)
-	authServiceOAuthCallbackHandler := connect.NewUnaryHandlerSimple(
+	authServiceOAuthCallbackHandler := connect.NewUnaryHandler(
 		AuthServiceOAuthCallbackProcedure,
 		svc.OAuthCallback,
 		connect.WithSchema(authServiceMethods.ByName("OAuthCallback")),
 		connect.WithHandlerOptions(opts...),
 	)
-	authServiceValidateTokenHandler := connect.NewUnaryHandlerSimple(
+	authServiceValidateTokenHandler := connect.NewUnaryHandler(
 		AuthServiceValidateTokenProcedure,
 		svc.ValidateToken,
 		connect.WithSchema(authServiceMethods.ByName("ValidateToken")),
 		connect.WithHandlerOptions(opts...),
 	)
-	authServiceGetCurrentUserHandler := connect.NewUnaryHandlerSimple(
+	authServiceGetCurrentUserHandler := connect.NewUnaryHandler(
 		AuthServiceGetCurrentUserProcedure,
 		svc.GetCurrentUser,
 		connect.WithSchema(authServiceMethods.ByName("GetCurrentUser")),
@@ -211,19 +195,19 @@ func NewAuthServiceHandler(svc AuthServiceHandler, opts ...connect.HandlerOption
 // UnimplementedAuthServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedAuthServiceHandler struct{}
 
-func (UnimplementedAuthServiceHandler) StartOAuth(context.Context, *v1.StartOAuthRequest) (*v1.StartOAuthResponse, error) {
+func (UnimplementedAuthServiceHandler) StartOAuth(context.Context, *connect.Request[v1.StartOAuthRequest]) (*connect.Response[v1.StartOAuthResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("auth.v1.AuthService.StartOAuth is not implemented"))
 }
 
-func (UnimplementedAuthServiceHandler) OAuthCallback(context.Context, *v1.OAuthCallbackRequest) (*v1.OAuthCallbackResponse, error) {
+func (UnimplementedAuthServiceHandler) OAuthCallback(context.Context, *connect.Request[v1.OAuthCallbackRequest]) (*connect.Response[v1.OAuthCallbackResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("auth.v1.AuthService.OAuthCallback is not implemented"))
 }
 
-func (UnimplementedAuthServiceHandler) ValidateToken(context.Context, *v1.ValidateTokenRequest) (*v1.ValidateTokenResponse, error) {
+func (UnimplementedAuthServiceHandler) ValidateToken(context.Context, *connect.Request[v1.ValidateTokenRequest]) (*connect.Response[v1.ValidateTokenResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("auth.v1.AuthService.ValidateToken is not implemented"))
 }
 
-func (UnimplementedAuthServiceHandler) GetCurrentUser(context.Context, *v1.GetCurrentUserRequest) (*v1.GetCurrentUserResponse, error) {
+func (UnimplementedAuthServiceHandler) GetCurrentUser(context.Context, *connect.Request[v1.GetCurrentUserRequest]) (*connect.Response[v1.GetCurrentUserResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("auth.v1.AuthService.GetCurrentUser is not implemented"))
 }
 
@@ -231,25 +215,25 @@ func (UnimplementedAuthServiceHandler) GetCurrentUser(context.Context, *v1.GetCu
 type UserServiceClient interface {
 	// List returns a list of users.
 	// Returns the user in an array.
-	List(context.Context, *v1.ListRequest) (*v1.ListResponse, error)
+	List(context.Context, *connect.Request[v1.ListRequest]) (*connect.Response[v1.ListResponse], error)
 	// Create creates a new user.
 	// Creates a new user.
-	Create(context.Context, *v1.CreateRequest) (*v1.CreateResponse, error)
+	Create(context.Context, *connect.Request[v1.CreateRequest]) (*connect.Response[v1.CreateResponse], error)
 	// Get retrieves in backend all information about a specific userId.
 	// Retrieve a specific user.
-	Get(context.Context, *v1.GetRequest) (*v1.GetResponse, error)
+	Get(context.Context, *connect.Request[v1.GetRequest]) (*connect.Response[v1.GetResponse], error)
 	// Update allows to modify information about a specific userId.
 	// Updates the status of a user.
-	Update(context.Context, *v1.UpdateRequest) (*v1.UpdateResponse, error)
+	Update(context.Context, *connect.Request[v1.UpdateRequest]) (*connect.Response[v1.UpdateResponse], error)
 	// Delete allows to delete a specific userId.
 	// delete a user.
-	Delete(context.Context, *v1.DeleteRequest) (*v1.DeleteResponse, error)
+	Delete(context.Context, *connect.Request[v1.DeleteRequest]) (*connect.Response[v1.DeleteResponse], error)
 	// Count returns the number of user based on search criterias.
 	// Returns the number of users found after filtering with passed criterias.
-	Count(context.Context, *v1.CountRequest) (*v1.CountResponse, error)
+	Count(context.Context, *connect.Request[v1.CountRequest]) (*connect.Response[v1.CountResponse], error)
 	// GetByExternalId returns a user having an externalId or nothing if not found.
 	// Returns the user.
-	GetByExternalId(context.Context, *v1.GetByExternalIdRequest) (*v1.GetByExternalIdResponse, error)
+	GetByExternalId(context.Context, *connect.Request[v1.GetByExternalIdRequest]) (*connect.Response[v1.GetByExternalIdResponse], error)
 }
 
 // NewUserServiceClient constructs a client for the auth.v1.UserService service. By default, it uses
@@ -320,91 +304,63 @@ type userServiceClient struct {
 }
 
 // List calls auth.v1.UserService.List.
-func (c *userServiceClient) List(ctx context.Context, req *v1.ListRequest) (*v1.ListResponse, error) {
-	response, err := c.list.CallUnary(ctx, connect.NewRequest(req))
-	if response != nil {
-		return response.Msg, err
-	}
-	return nil, err
+func (c *userServiceClient) List(ctx context.Context, req *connect.Request[v1.ListRequest]) (*connect.Response[v1.ListResponse], error) {
+	return c.list.CallUnary(ctx, req)
 }
 
 // Create calls auth.v1.UserService.Create.
-func (c *userServiceClient) Create(ctx context.Context, req *v1.CreateRequest) (*v1.CreateResponse, error) {
-	response, err := c.create.CallUnary(ctx, connect.NewRequest(req))
-	if response != nil {
-		return response.Msg, err
-	}
-	return nil, err
+func (c *userServiceClient) Create(ctx context.Context, req *connect.Request[v1.CreateRequest]) (*connect.Response[v1.CreateResponse], error) {
+	return c.create.CallUnary(ctx, req)
 }
 
 // Get calls auth.v1.UserService.Get.
-func (c *userServiceClient) Get(ctx context.Context, req *v1.GetRequest) (*v1.GetResponse, error) {
-	response, err := c.get.CallUnary(ctx, connect.NewRequest(req))
-	if response != nil {
-		return response.Msg, err
-	}
-	return nil, err
+func (c *userServiceClient) Get(ctx context.Context, req *connect.Request[v1.GetRequest]) (*connect.Response[v1.GetResponse], error) {
+	return c.get.CallUnary(ctx, req)
 }
 
 // Update calls auth.v1.UserService.Update.
-func (c *userServiceClient) Update(ctx context.Context, req *v1.UpdateRequest) (*v1.UpdateResponse, error) {
-	response, err := c.update.CallUnary(ctx, connect.NewRequest(req))
-	if response != nil {
-		return response.Msg, err
-	}
-	return nil, err
+func (c *userServiceClient) Update(ctx context.Context, req *connect.Request[v1.UpdateRequest]) (*connect.Response[v1.UpdateResponse], error) {
+	return c.update.CallUnary(ctx, req)
 }
 
 // Delete calls auth.v1.UserService.Delete.
-func (c *userServiceClient) Delete(ctx context.Context, req *v1.DeleteRequest) (*v1.DeleteResponse, error) {
-	response, err := c.delete.CallUnary(ctx, connect.NewRequest(req))
-	if response != nil {
-		return response.Msg, err
-	}
-	return nil, err
+func (c *userServiceClient) Delete(ctx context.Context, req *connect.Request[v1.DeleteRequest]) (*connect.Response[v1.DeleteResponse], error) {
+	return c.delete.CallUnary(ctx, req)
 }
 
 // Count calls auth.v1.UserService.Count.
-func (c *userServiceClient) Count(ctx context.Context, req *v1.CountRequest) (*v1.CountResponse, error) {
-	response, err := c.count.CallUnary(ctx, connect.NewRequest(req))
-	if response != nil {
-		return response.Msg, err
-	}
-	return nil, err
+func (c *userServiceClient) Count(ctx context.Context, req *connect.Request[v1.CountRequest]) (*connect.Response[v1.CountResponse], error) {
+	return c.count.CallUnary(ctx, req)
 }
 
 // GetByExternalId calls auth.v1.UserService.GetByExternalId.
-func (c *userServiceClient) GetByExternalId(ctx context.Context, req *v1.GetByExternalIdRequest) (*v1.GetByExternalIdResponse, error) {
-	response, err := c.getByExternalId.CallUnary(ctx, connect.NewRequest(req))
-	if response != nil {
-		return response.Msg, err
-	}
-	return nil, err
+func (c *userServiceClient) GetByExternalId(ctx context.Context, req *connect.Request[v1.GetByExternalIdRequest]) (*connect.Response[v1.GetByExternalIdResponse], error) {
+	return c.getByExternalId.CallUnary(ctx, req)
 }
 
 // UserServiceHandler is an implementation of the auth.v1.UserService service.
 type UserServiceHandler interface {
 	// List returns a list of users.
 	// Returns the user in an array.
-	List(context.Context, *v1.ListRequest) (*v1.ListResponse, error)
+	List(context.Context, *connect.Request[v1.ListRequest]) (*connect.Response[v1.ListResponse], error)
 	// Create creates a new user.
 	// Creates a new user.
-	Create(context.Context, *v1.CreateRequest) (*v1.CreateResponse, error)
+	Create(context.Context, *connect.Request[v1.CreateRequest]) (*connect.Response[v1.CreateResponse], error)
 	// Get retrieves in backend all information about a specific userId.
 	// Retrieve a specific user.
-	Get(context.Context, *v1.GetRequest) (*v1.GetResponse, error)
+	Get(context.Context, *connect.Request[v1.GetRequest]) (*connect.Response[v1.GetResponse], error)
 	// Update allows to modify information about a specific userId.
 	// Updates the status of a user.
-	Update(context.Context, *v1.UpdateRequest) (*v1.UpdateResponse, error)
+	Update(context.Context, *connect.Request[v1.UpdateRequest]) (*connect.Response[v1.UpdateResponse], error)
 	// Delete allows to delete a specific userId.
 	// delete a user.
-	Delete(context.Context, *v1.DeleteRequest) (*v1.DeleteResponse, error)
+	Delete(context.Context, *connect.Request[v1.DeleteRequest]) (*connect.Response[v1.DeleteResponse], error)
 	// Count returns the number of user based on search criterias.
 	// Returns the number of users found after filtering with passed criterias.
-	Count(context.Context, *v1.CountRequest) (*v1.CountResponse, error)
+	Count(context.Context, *connect.Request[v1.CountRequest]) (*connect.Response[v1.CountResponse], error)
 	// GetByExternalId returns a user having an externalId or nothing if not found.
 	// Returns the user.
-	GetByExternalId(context.Context, *v1.GetByExternalIdRequest) (*v1.GetByExternalIdResponse, error)
+	GetByExternalId(context.Context, *connect.Request[v1.GetByExternalIdRequest]) (*connect.Response[v1.GetByExternalIdResponse], error)
 }
 
 // NewUserServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -414,43 +370,43 @@ type UserServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewUserServiceHandler(svc UserServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	userServiceMethods := v1.File_auth_v1_auth_proto.Services().ByName("UserService").Methods()
-	userServiceListHandler := connect.NewUnaryHandlerSimple(
+	userServiceListHandler := connect.NewUnaryHandler(
 		UserServiceListProcedure,
 		svc.List,
 		connect.WithSchema(userServiceMethods.ByName("List")),
 		connect.WithHandlerOptions(opts...),
 	)
-	userServiceCreateHandler := connect.NewUnaryHandlerSimple(
+	userServiceCreateHandler := connect.NewUnaryHandler(
 		UserServiceCreateProcedure,
 		svc.Create,
 		connect.WithSchema(userServiceMethods.ByName("Create")),
 		connect.WithHandlerOptions(opts...),
 	)
-	userServiceGetHandler := connect.NewUnaryHandlerSimple(
+	userServiceGetHandler := connect.NewUnaryHandler(
 		UserServiceGetProcedure,
 		svc.Get,
 		connect.WithSchema(userServiceMethods.ByName("Get")),
 		connect.WithHandlerOptions(opts...),
 	)
-	userServiceUpdateHandler := connect.NewUnaryHandlerSimple(
+	userServiceUpdateHandler := connect.NewUnaryHandler(
 		UserServiceUpdateProcedure,
 		svc.Update,
 		connect.WithSchema(userServiceMethods.ByName("Update")),
 		connect.WithHandlerOptions(opts...),
 	)
-	userServiceDeleteHandler := connect.NewUnaryHandlerSimple(
+	userServiceDeleteHandler := connect.NewUnaryHandler(
 		UserServiceDeleteProcedure,
 		svc.Delete,
 		connect.WithSchema(userServiceMethods.ByName("Delete")),
 		connect.WithHandlerOptions(opts...),
 	)
-	userServiceCountHandler := connect.NewUnaryHandlerSimple(
+	userServiceCountHandler := connect.NewUnaryHandler(
 		UserServiceCountProcedure,
 		svc.Count,
 		connect.WithSchema(userServiceMethods.ByName("Count")),
 		connect.WithHandlerOptions(opts...),
 	)
-	userServiceGetByExternalIdHandler := connect.NewUnaryHandlerSimple(
+	userServiceGetByExternalIdHandler := connect.NewUnaryHandler(
 		UserServiceGetByExternalIdProcedure,
 		svc.GetByExternalId,
 		connect.WithSchema(userServiceMethods.ByName("GetByExternalId")),
@@ -481,30 +437,30 @@ func NewUserServiceHandler(svc UserServiceHandler, opts ...connect.HandlerOption
 // UnimplementedUserServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedUserServiceHandler struct{}
 
-func (UnimplementedUserServiceHandler) List(context.Context, *v1.ListRequest) (*v1.ListResponse, error) {
+func (UnimplementedUserServiceHandler) List(context.Context, *connect.Request[v1.ListRequest]) (*connect.Response[v1.ListResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("auth.v1.UserService.List is not implemented"))
 }
 
-func (UnimplementedUserServiceHandler) Create(context.Context, *v1.CreateRequest) (*v1.CreateResponse, error) {
+func (UnimplementedUserServiceHandler) Create(context.Context, *connect.Request[v1.CreateRequest]) (*connect.Response[v1.CreateResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("auth.v1.UserService.Create is not implemented"))
 }
 
-func (UnimplementedUserServiceHandler) Get(context.Context, *v1.GetRequest) (*v1.GetResponse, error) {
+func (UnimplementedUserServiceHandler) Get(context.Context, *connect.Request[v1.GetRequest]) (*connect.Response[v1.GetResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("auth.v1.UserService.Get is not implemented"))
 }
 
-func (UnimplementedUserServiceHandler) Update(context.Context, *v1.UpdateRequest) (*v1.UpdateResponse, error) {
+func (UnimplementedUserServiceHandler) Update(context.Context, *connect.Request[v1.UpdateRequest]) (*connect.Response[v1.UpdateResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("auth.v1.UserService.Update is not implemented"))
 }
 
-func (UnimplementedUserServiceHandler) Delete(context.Context, *v1.DeleteRequest) (*v1.DeleteResponse, error) {
+func (UnimplementedUserServiceHandler) Delete(context.Context, *connect.Request[v1.DeleteRequest]) (*connect.Response[v1.DeleteResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("auth.v1.UserService.Delete is not implemented"))
 }
 
-func (UnimplementedUserServiceHandler) Count(context.Context, *v1.CountRequest) (*v1.CountResponse, error) {
+func (UnimplementedUserServiceHandler) Count(context.Context, *connect.Request[v1.CountRequest]) (*connect.Response[v1.CountResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("auth.v1.UserService.Count is not implemented"))
 }
 
-func (UnimplementedUserServiceHandler) GetByExternalId(context.Context, *v1.GetByExternalIdRequest) (*v1.GetByExternalIdResponse, error) {
+func (UnimplementedUserServiceHandler) GetByExternalId(context.Context, *connect.Request[v1.GetByExternalIdRequest]) (*connect.Response[v1.GetByExternalIdResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("auth.v1.UserService.GetByExternalId is not implemented"))
 }

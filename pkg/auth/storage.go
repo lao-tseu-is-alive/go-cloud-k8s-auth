@@ -2,49 +2,44 @@ package auth
 
 import (
 	"context"
-	"log/slog"
 
 	"github.com/google/uuid"
-	"github.com/lao-tseu-is-alive/go-cloud-k8s-common-libs/pkg/database"
 )
 
-// Storage is an interface to different implementation of persistence for Auths/TypeAuth
-type Storage interface {
-	// List returns the list of existing go_cloud_auths with the given offset and limit.
-	List(ctx context.Context, offset, limit int, params ListParams) ([]*UseAuthList, error)
-	// GetByExternalId returns the list of existing go_cloud_auths having the given externalId with the given offset and limit.
-	GetByExternalId(ctx context.Context, offset, limit int, externalId int) ([]*AuthList, error)
-	// Search returns the list of existing go_cloud_auths filtered by search params with the given offset and limit.
-	Search(ctx context.Context, offset, limit int, params SearchParams) ([]*AuthList, error)
-	// Get returns the go_cloud_auth with the specified go_cloud_auths ID.
-	Get(ctx context.Context, id uuid.UUID) (*Auth, error)
-	// Exist returns true only if a go_cloud_auths with the specified id exists in store.
+// UserStorage defines the persistence interface for user operations.
+type UserStorage interface {
+	// UpsertByProvider creates or updates a user based on OAuth provider + provider ID.
+	// On conflict (provider, provider_id), updates name, avatar_url, and last_login_at.
+	UpsertByProvider(ctx context.Context, email, name, avatarURL, provider, providerID string) (*User, error)
+
+	// GetByID returns the user with the specified UUID.
+	GetByID(ctx context.Context, id uuid.UUID) (*User, error)
+
+	// GetByAlternateAppID returns the user with the specified legacy integer ID.
+	GetByAlternateAppID(ctx context.Context, appID int64) (*User, error)
+
+	// List returns users with pagination and optional active/disabled filter.
+	// If disabledFilter is nil, all users are returned.
+	List(ctx context.Context, offset, limit int, disabledFilter *bool) ([]*UserList, error)
+
+	// Create saves a new user in the storage.
+	Create(ctx context.Context, u User) (*User, error)
+
+	// Update updates the user with given UUID in the storage.
+	Update(ctx context.Context, id uuid.UUID, u User) (*User, error)
+
+	// Delete removes the user with given UUID from the storage.
+	Delete(ctx context.Context, id uuid.UUID) error
+
+	// Count returns the total number of users, optionally filtered by active status.
+	Count(ctx context.Context, disabledFilter *bool) (int32, error)
+
+	// Exist returns true if a user with the specified UUID exists.
 	Exist(ctx context.Context, id uuid.UUID) bool
-	// Count returns the total number of go_cloud_auths.
-	Count(ctx context.Context, params CountParams) (int32, error)
-	// Create saves a new go_cloud_auths in the storage.
-	Create(ctx context.Context, go_cloud_auth Auth) (*Auth, error)
-	// Update updates the go_cloud_auths with given ID in the storage.
-	Update(ctx context.Context, id uuid.UUID, go_cloud_auth Auth) (*Auth, error)
-	// Delete removes the go_cloud_auths with given ID from the storage.
-	Delete(ctx context.Context, id uuid.UUID, userId int32) error
-	// IsAuthActive returns true if the go_cloud_auth with the specified id has the inactivated attribute set to false
-	IsAuthActive(ctx context.Context, id uuid.UUID) bool
-}
 
-func GetStorageInstanceOrPanic(ctx context.Context, dbDriver string, db database.DB, l *slog.Logger) Storage {
-	var store Storage
-	var err error
-	switch dbDriver {
-	case "pgx":
-		store, err = NewPgxDB(ctx, db, l)
-		if err != nil {
-			l.Error("error doing NewPgxDB", "error", err)
-			panic(err)
-		}
+	// UpdateLastLogin updates the last_login_at timestamp for the given user.
+	UpdateLastLogin(ctx context.Context, id uuid.UUID) error
 
-	default:
-		panic("unsupported DB driver type")
-	}
-	return store
+	// GetUserGroupIDs returns the group UUIDs for the given user.
+	GetUserGroupIDs(ctx context.Context, userID uuid.UUID) ([]uuid.UUID, error)
 }

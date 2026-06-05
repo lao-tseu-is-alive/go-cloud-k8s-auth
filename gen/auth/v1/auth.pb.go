@@ -7,8 +7,8 @@
 package authv1
 
 import (
-	_ "github.com/lao-tseu-is-alive/go-cloud-k8s-auth/gen/buf/validate"
-	_ "github.com/lao-tseu-is-alive/go-cloud-k8s-auth/gen/google/api"
+	_ "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
+	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	_ "google.golang.org/protobuf/types/known/emptypb"

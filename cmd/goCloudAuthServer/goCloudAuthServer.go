@@ -31,6 +31,7 @@ import (
 	"github.com/lao-tseu-is-alive/go-cloud-k8s-common-libs/pkg/metadata"
 	"github.com/lao-tseu-is-alive/go-cloud-k8s-common-libs/pkg/tools"
 	"github.com/prometheus/client_golang/prometheus"
+	"golang.org/x/oauth2"
 )
 
 const (
@@ -214,7 +215,7 @@ func main() {
 		log.Fatalf("💥💥 error getting log level: %v'\n", err)
 	}
 	l := golog.NewLogger("simple", logWriter, logLevel, version.AppName)
-	l.Info("🚀 Starting", "app", version.AppName, "version", version.Version, "revision", version.Revision, "build", version.BuildStamp, "repository", version.REPOSITORY)
+	l.Info("🚀 Starting", "app", version.AppName, "version", version.Version, "revision", version.Revision, "build", version.BuildStamp, "repository", version.Repository)
 
 	dbDsn, err := config.GetPgDbDsnUrl(defaultDBIp, defaultDBPort, tools.ToSnakeCase(version.AppName), version.AppNameSnake, defaultDBSslMode)
 	if err != nil {
@@ -348,19 +349,81 @@ func main() {
 	// This line will only compile if the 'dev' build tag is active.
 	// Conditional compilation of dev routes
 
-	if IsDevBuild {
-		l.Info("Attempting to register dev routes...")
-		DevRoutes(e, &yourService, jwtAuthUrl)
-	}
+	/*
+		if IsDevBuild {
+			l.Info("Attempting to register dev routes...")
+			DevRoutes(e, &yourService, jwtAuthUrl)
+		}
+
+	*/
 	r := server.GetRestrictedGroup()
 	r.GET(jwtStatusUrl, yourService.GetStatus)
 
 	dbStorageCtx, dbStorageCancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer dbStorageCancel()
-	authStore := auth.GetStorageInstanceOrPanic(dbStorageCtx, "pgx", db, l)
 
-	// Create business service (transport-agnostic)
-	authBusinessService := auth.NewBusinessService(authStore, db, l, 50)
+	// Initialize the PostgreSQL UserStorage
+	authStore, err := auth.NewPgxDB(dbStorageCtx, db, l)
+	if err != nil {
+		l.Error("💥💥 error creating auth storage", "error", err)
+		os.Exit(1)
+	}
+
+	// Build OAuth configs from environment variables
+	oauthConfigs := make(map[string]*oauth2.Config)
+
+	googleClientID := os.Getenv("OAUTH_GOOGLE_CLIENT_ID")
+	googleClientSecret := os.Getenv("OAUTH_GOOGLE_CLIENT_SECRET")
+	if googleClientID != "" && googleClientSecret != "" {
+		googleRedirect := os.Getenv("OAUTH_GOOGLE_REDIRECT_URL")
+		if googleRedirect == "" {
+			googleRedirect = "http://localhost:9090/goapi/v1/auth/callback"
+		}
+		oauthConfigs["google"] = auth.BuildGoogleConfig(auth.OAuthProviderConfig{
+			ClientID:     googleClientID,
+			ClientSecret: googleClientSecret,
+			RedirectURL:  googleRedirect,
+		})
+		l.Info("OAuth provider Google configured", "redirectURL", googleRedirect)
+	}
+
+	githubClientID := os.Getenv("OAUTH_GITHUB_CLIENT_ID")
+	githubClientSecret := os.Getenv("OAUTH_GITHUB_CLIENT_SECRET")
+	if githubClientID != "" && githubClientSecret != "" {
+		githubRedirect := os.Getenv("OAUTH_GITHUB_REDIRECT_URL")
+		if githubRedirect == "" {
+			githubRedirect = "http://localhost:9090/goapi/v1/auth/callback"
+		}
+		oauthConfigs["github"] = auth.BuildGitHubConfig(auth.OAuthProviderConfig{
+			ClientID:     githubClientID,
+			ClientSecret: githubClientSecret,
+			RedirectURL:  githubRedirect,
+		})
+		l.Info("OAuth provider GitHub configured", "redirectURL", githubRedirect)
+	}
+
+	microsoftClientID := os.Getenv("OAUTH_MICROSOFT_CLIENT_ID")
+	microsoftClientSecret := os.Getenv("OAUTH_MICROSOFT_CLIENT_SECRET")
+	if microsoftClientID != "" && microsoftClientSecret != "" {
+		microsoftRedirect := os.Getenv("OAUTH_MICROSOFT_REDIRECT_URL")
+		if microsoftRedirect == "" {
+			microsoftRedirect = "http://localhost:9090/goapi/v1/auth/callback"
+		}
+		oauthConfigs["microsoft"] = auth.BuildMicrosoftConfig(auth.OAuthProviderConfig{
+			ClientID:     microsoftClientID,
+			ClientSecret: microsoftClientSecret,
+			RedirectURL:  microsoftRedirect,
+		})
+		l.Info("OAuth provider Microsoft configured", "redirectURL", microsoftRedirect)
+	}
+
+	if len(oauthConfigs) == 0 {
+		l.Warn("⚠️ No OAuth providers configured. OAuth login flows will be unavailable.")
+	}
+
+	// Create business services (transport-agnostic)
+	authBusinessService := auth.NewAuthBusinessService(authStore, myJwt, oauthConfigs, l)
+	userBusinessService := auth.NewUserBusinessService(authStore, l, 50)
 
 	// ---------------------------------------------------------
 	// Connect + Vanguard: REST/gRPC/Connect transcoding
@@ -369,47 +432,43 @@ func main() {
 	authInterceptor := auth.NewAuthInterceptor(myJwt, l)
 	interceptors := connect.WithInterceptors(authInterceptor)
 
-	// Create Connect servers (auth is handled by interceptor, not servers)
+	// Create Connect servers
 	authConnectServer := auth.NewAuthConnectServer(authBusinessService, l)
-	typegoCloudAuthConnectServer := auth.NewTypeAuthConnectServer(authBusinessService, l)
+	userConnectServer := auth.NewUserConnectServer(userBusinessService, l)
 
 	// Create service handlers with auth interceptor
 	_, authHandler := authv1connect.NewAuthServiceHandler(authConnectServer, interceptors)
-	_, typegoCloudAuthHandler := authv1connect.NewTypeAuthServiceHandler(typegoCloudAuthConnectServer, interceptors)
+	_, userHandler := authv1connect.NewUserServiceHandler(userConnectServer, interceptors)
 
 	// Create Vanguard services for HTTP transcoding
 	authService := vanguard.NewService(
-		authv1connect.goCloudAuthServiceName,
+		authv1connect.AuthServiceName,
 		authHandler,
 	)
-	typegoCloudAuthService := vanguard.NewService(
-		authv1connect.TypegoCloudAuthServiceName,
-		typegoCloudAuthHandler,
+	userService := vanguard.NewService(
+		authv1connect.UserServiceName,
+		userHandler,
 	)
 
 	// Create transcoder for REST + gRPC + Connect
 	transcoder, err := vanguard.NewTranscoder([]*vanguard.Service{
 		authService,
-		typegoCloudAuthService,
+		userService,
 	})
 	if err != nil {
 		l.Error("💥💥 error failed to create vanguard transcoder", "error", err)
 		os.Exit(1)
 	}
 
-	// Mount transcoder into Echo with /goapi/v1 prefix
-	// The transcoder handles REST endpoints defined in proto:
-	// - GET /auth, POST /auth, etc. (defined in proto HTTP annotations)
-	// - Connect endpoints: /auth.v1.goCloudAuthService/*
-	//
-	// We strip the /goapi/v1 prefix before passing to transcoder
-	transcoderWithPrefix := http.StripPrefix(defaultSecuredApi, transcoder)
+	// Mount Connect RPC endpoints directly (no prefix stripping needed)
+	e.Any("/auth.v1.AuthService/*", echo.WrapHandler(transcoder))
+	e.Any("/auth.v1.UserService/*", echo.WrapHandler(transcoder))
 
-	e.Any(defaultSecuredApi+"/auth*", echo.WrapHandler(transcoderWithPrefix))
-	e.Any(defaultSecuredApi+"/types*", echo.WrapHandler(transcoderWithPrefix))
-
-	// Connect RPC endpoints (no prefix stripping needed)
-	e.Any("/auth.v1.*", echo.WrapHandler(transcoder))
+	// REST endpoints with prefix stripping for annotations:
+	// 1. /v1/auth/... requires /goapi prefix to be stripped
+	e.Any("/goapi/v1/auth/*", echo.WrapHandler(http.StripPrefix("/goapi", transcoder)))
+	// 2. /user/... requires /goapi/v1 prefix to be stripped
+	e.Any("/goapi/v1/user*", echo.WrapHandler(http.StripPrefix("/goapi/v1", transcoder)))
 
 	l.Info("🚀 Connect+Vanguard handlers mounted for REST/gRPC transcoding", "securedUrl", defaultSecuredApi)
 

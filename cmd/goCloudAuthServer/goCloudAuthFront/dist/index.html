@@ -1,16 +1,645 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8" />
     <link rel="icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Goéland template4YourProjectName</title>
-  <script type="module" crossorigin src="/assets/index-DhvuThF5.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-DFE2BIJw.css">
+    <title>Go-Cloud-Auth-Server - Test d'Authentification</title>
+    <!-- Modern Premium Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --accent-purple: #8b5cf6;
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --glass-bg: rgba(30, 41, 59, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --shadow-glow: 0 0 25px rgba(139, 92, 246, 0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(139, 92, 246, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(59, 130, 246, 0.15) 0%, transparent 40%);
+            background-attachment: fixed;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3), var(--shadow-glow);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #a78bfa 0%, #60a5fa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 1rem;
+            margin-bottom: 2.5rem;
+        }
+
+        /* Card Section Styles */
+        .section {
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #c084fc;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Custom Status Indicator */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--accent-red);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .status-badge.connected {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--accent-green);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: currentColor;
+            box-shadow: 0 0 10px currentColor;
+        }
+
+        /* Buttons layout */
+        .btn-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        button {
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 500;
+            padding: 0.8rem 1.5rem;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            color: #ffffff;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .btn-github {
+            background: linear-gradient(135deg, #24292e 0%, #1a1e22 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .btn-github:hover {
+            box-shadow: 0 0 15px rgba(36, 41, 46, 0.6);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-google {
+            background: linear-gradient(135deg, #ea4335 0%, #c5221f 100%);
+        }
+        .btn-google:hover {
+            box-shadow: 0 0 15px rgba(234, 67, 53, 0.4);
+        }
+
+        .btn-microsoft {
+            background: linear-gradient(135deg, #00a4ef 0%, #0078d4 100%);
+        }
+        .btn-microsoft:hover {
+            box-shadow: 0 0 15px rgba(0, 164, 239, 0.4);
+        }
+
+        .btn-action {
+            background: linear-gradient(135deg, var(--accent-purple) 0%, #7c3aed 100%);
+        }
+        .btn-action:hover {
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
+        }
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--accent-red) 0%, #dc2626 100%);
+        }
+        .btn-danger:hover {
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+        }
+
+        /* Feedbacks & Logs console */
+        .console {
+            background: #020617;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1rem;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.85rem;
+            color: #38bdf8;
+            max-height: 250px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            margin-top: 1rem;
+        }
+
+        .console-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 0.25rem;
+        }
+
+        .feedback-msg {
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            display: none;
+            line-height: 1.4;
+        }
+
+        .feedback-info {
+            background: rgba(59, 130, 246, 0.1);
+            color: #93c5fd;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .feedback-success {
+            background: rgba(16, 185, 129, 0.1);
+            color: #a7f3d0;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .feedback-error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: 2px solid var(--accent-purple);
+            background: var(--bg-secondary);
+        }
+
+        .user-details {
+            flex-grow: 1;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .user-email {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+    </style>
 </head>
-
 <body>
-    <div id="app"></div>
-</body>
 
+    <div class="container">
+        <h1>🔐 Go-Cloud-Auth</h1>
+        <p class="subtitle">Portail de Test Interactif pour le Service d'Authentification</p>
+
+        <!-- SECTION 1 : ÉTAT D'AUTHENTIFICATION -->
+        <div class="section" id="section-status">
+            <div class="section-title">
+                <span>Statut de Connexion</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div id="auth-status-badge" class="status-badge">
+                    <span class="status-dot"></span>
+                    <span id="auth-status-text">Non Connecté</span>
+                </div>
+                <button id="btn-logout" class="btn-danger" style="display: none; padding: 0.4rem 1rem; font-size: 0.8rem;">
+                    Déconnexion
+                </button>
+            </div>
+            
+            <!-- Profil utilisateur connecté -->
+            <div id="user-info-card" class="user-profile" style="display: none;">
+                <img id="user-avatar" class="avatar" src="" alt="Avatar" />
+                <div class="user-details">
+                    <div id="user-display-name" class="user-name">-</div>
+                    <div id="user-display-email" class="user-email">-</div>
+                    <div style="margin-top: 0.25rem;">
+                        <span id="user-roles" style="font-size: 0.75rem; background: rgba(139, 92, 246, 0.2); padding: 0.2rem 0.5rem; border-radius: 4px; color: #d8b4fe;">-</span>
+                        <span id="user-provider" style="font-size: 0.75rem; background: rgba(59, 130, 246, 0.2); padding: 0.2rem 0.5rem; border-radius: 4px; color: #93c5fd; margin-left: 0.25rem;">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 2 : LANCEMENT AUTH OAUTH2 -->
+        <div class="section" id="section-providers">
+            <div class="section-title">
+                <span>Fournisseurs de Connexion (OAuth2)</span>
+            </div>
+            <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">
+                Sélectionnez un fournisseur pour initier le flux de connexion. Assurez-vous d'avoir configuré les variables d'environnement correspondantes dans le fichier <code>.env</code>.
+            </p>
+            <div class="btn-group">
+                <button id="btn-auth-github" class="btn-github">
+                    🐱 GitHub
+                </button>
+                <button id="btn-auth-google" class="btn-google">
+                    🌐 Google
+                </button>
+                <button id="btn-auth-microsoft" class="btn-microsoft">
+                    💻 Microsoft AD
+                </button>
+            </div>
+        </div>
+
+        <!-- SECTION 3 : TESTS DE L'API SECURISÉE -->
+        <div class="section" id="section-api-tests">
+            <div class="section-title">
+                <span>Actions & Validation de l'API</span>
+            </div>
+            <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">
+                Utilisez le jeton JWT généré pour appeler et valider les endpoints sécurisés du serveur.
+            </p>
+            <div class="btn-group">
+                <button id="btn-api-currentUser" class="btn-action">
+                    👤 Utilisateur Courant
+                </button>
+                <button id="btn-api-validate" class="btn-action">
+                    ✔️ Valider le Jeton
+                </button>
+                <button id="btn-api-listUsers" class="btn-secondary">
+                    📋 Lister les Utilisateurs
+                </button>
+            </div>
+        </div>
+
+        <!-- ZONE DE FEEDBACK EN FRANÇAIS -->
+        <div id="feedback-alert" class="feedback-msg"></div>
+
+        <!-- ZONE DE LOGS / CONSOLE -->
+        <div class="console-header">
+            <span>CONSOLE DE DEBUG & RÉPONSES API</span>
+            <span id="clear-console" style="cursor: pointer; text-decoration: underline;">Effacer</span>
+        </div>
+        <div id="debug-console" class="console">Console prête. En attente d'actions...</div>
+    </div>
+
+    <script>
+        // --- CONFIGURATION DU STOCKAGE ---
+        const JWT_KEY = "goJWT_token";
+        const PROVIDER_KEY = "current_oauth_provider";
+
+        // --- DOM ELEMENTS ---
+        const btnGithub = document.getElementById("btn-auth-github");
+        const btnGoogle = document.getElementById("btn-auth-google");
+        const btnMicrosoft = document.getElementById("btn-auth-microsoft");
+        
+        const btnCurrentUser = document.getElementById("btn-api-currentUser");
+        const btnValidate = document.getElementById("btn-api-validate");
+        const btnListUsers = document.getElementById("btn-api-listUsers");
+        const btnLogout = document.getElementById("btn-logout");
+
+        const authStatusBadge = document.getElementById("auth-status-badge");
+        const authStatusText = document.getElementById("auth-status-text");
+        const userInfoCard = document.getElementById("user-info-card");
+        const userAvatar = document.getElementById("user-avatar");
+        const userDisplayName = document.getElementById("user-display-name");
+        const userDisplayEmail = document.getElementById("user-display-email");
+        const userRoles = document.getElementById("user-roles");
+        const userProvider = document.getElementById("user-provider");
+
+        const debugConsole = document.getElementById("debug-console");
+        const feedbackAlert = document.getElementById("feedback-alert");
+        const clearConsole = document.getElementById("clear-console");
+
+        // --- UTILS : LOG & FEEDBACK ---
+        function log(message, data = null) {
+            const timestamp = new Date().toLocaleTimeString();
+            let logText = `[${timestamp}] ${message}`;
+            if (data) {
+                logText += `\n${JSON.stringify(data, null, 2)}`;
+            }
+            debugConsole.textContent = logText + "\n\n" + debugConsole.textContent;
+            console.log(message, data);
+        }
+
+        function showFeedback(text, type = "info") {
+            feedbackAlert.className = `feedback-msg feedback-${type}`;
+            feedbackAlert.textContent = text;
+            feedbackAlert.style.display = "block";
+            // Auto hide after 6s
+            setTimeout(() => {
+                if (feedbackAlert.textContent === text) {
+                    feedbackAlert.style.display = "none";
+                }
+            }, 6000);
+        }
+
+        clearConsole.addEventListener("click", () => {
+            debugConsole.textContent = "Console effacée.";
+        });
+
+        // --- ÉTAT D'AUTHENTIFICATION ---
+        function getJWT() {
+            return localStorage.getItem(JWT_KEY);
+        }
+
+        function updateUIState() {
+            const token = getJWT();
+            if (token) {
+                authStatusBadge.className = "status-badge connected";
+                authStatusText.textContent = "Connecté (JWT présent)";
+                btnLogout.style.display = "block";
+                userInfoCard.style.display = "flex";
+                
+                // On essaie de pré-remplir depuis le stockage ou de décoder le JWT
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    log("Décodage local du JWT réussi", payload);
+                    
+                    userDisplayName.textContent = payload.user?.name || "Utilisateur";
+                    userDisplayEmail.textContent = payload.user?.email || "-";
+                    userRoles.textContent = `Rôles: ${(payload.user?.roles || []).join(', ')}`;
+                    userProvider.textContent = `Via: ${payload.user?.provider || 'JWT'}`;
+                    userAvatar.src = payload.user?.avatar_url || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
+                } catch (e) {
+                    log("Impossible de décoder localement les détails du JWT :", e);
+                }
+            } else {
+                authStatusBadge.className = "status-badge";
+                authStatusText.textContent = "Non Connecté";
+                btnLogout.style.display = "none";
+                userInfoCard.style.display = "none";
+            }
+        }
+
+        btnLogout.addEventListener("click", () => {
+            localStorage.removeItem(JWT_KEY);
+            localStorage.removeItem(PROVIDER_KEY);
+            log("Déconnexion de l'utilisateur. Suppression du JWT local.");
+            showFeedback("Vous avez été déconnecté avec succès.", "success");
+            updateUIState();
+        });
+
+        // --- FLUX OAUTH2 : DÉMARRAGE ---
+        async function startOAuthFlow(provider) {
+            log(`Démarrage du flux OAuth2 pour le fournisseur: ${provider}...`);
+            showFeedback(`Contact du serveur d'authentification pour ${provider}...`, "info");
+            
+            try {
+                // Appel ConnectRPC transcodé en REST POST
+                const response = await fetch("/goapi/v1/auth/start", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ provider: provider })
+                });
+
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.message || `Code erreur HTTP ${response.status}`);
+                }
+
+                log("Réponse de démarrage reçue du serveur", data);
+                
+                if (data.authUrl) {
+                    // On enregistre le provider pour le callback
+                    localStorage.setItem(PROVIDER_KEY, provider);
+                    log(`Redirection de l'utilisateur vers: ${data.authUrl}`);
+                    showFeedback("Redirection vers la page d'authentification...", "success");
+                    
+                    // Attente courte avant redirection pour que l'utilisateur lise le message
+                    setTimeout(() => {
+                        window.location.href = data.authUrl;
+                    }, 800);
+                } else {
+                    throw new Error("L'URL d'authentification retournée est vide.");
+                }
+            } catch (err) {
+                log("Erreur lors de l'initialisation du flux OAuth2", err.message);
+                showFeedback(`Échec de l'authentification : ${err.message}`, "error");
+            }
+        }
+
+        btnGithub.addEventListener("click", () => startOAuthFlow("github"));
+        btnGoogle.addEventListener("click", () => startOAuthFlow("google"));
+        btnMicrosoft.addEventListener("click", () => startOAuthFlow("microsoft"));
+
+        // --- FLUX OAUTH2 : CALLBACK ---
+        async function handleOAuthCallback() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get("code");
+            const state = urlParams.get("state");
+
+            if (!code || !state) return; // Pas dans un retour OAuth2
+
+            // On récupère le provider enregistré au démarrage
+            const provider = localStorage.getItem(PROVIDER_KEY);
+            if (!provider) {
+                log("Erreur : Aucun fournisseur OAuth2 trouvé en mémoire locale lors du callback.");
+                showFeedback("Échec du callback : impossible de récupérer le fournisseur configuré.", "error");
+                return;
+            }
+
+            log(`Retour OAuth détecté. Tentative d'échange de code pour ${provider}...`);
+            showFeedback("Échange du code d'autorisation contre un jeton de session...", "info");
+
+            try {
+                // Appel ConnectRPC transcodé en REST POST
+                const response = await fetch("/goapi/v1/auth/callback", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        provider: provider,
+                        code: code,
+                        state: state
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || `Code erreur HTTP ${response.status}`);
+                }
+
+                log("Connexion réussie ! Jeton JWT et utilisateur reçus du serveur", data);
+                
+                if (data.jwt) {
+                    // Enregistrement du token
+                    localStorage.setItem(JWT_KEY, data.jwt);
+                    showFeedback(`Bienvenue, ${data.user?.name || 'utilisateur'} ! Connexion réussie.`, "success");
+                } else {
+                    throw new Error("Le serveur n'a pas renvoyé de jeton JWT valide.");
+                }
+
+                // Nettoyer l'URL de ses paramètres de callback pour éviter les rafraîchissements
+                window.history.replaceState({}, document.title, window.location.pathname);
+                
+                updateUIState();
+            } catch (err) {
+                log("Erreur lors du traitement du callback OAuth2", err.message);
+                showFeedback(`Échec de la validation OAuth2 : ${err.message}`, "error");
+            }
+        }
+
+        // --- ACTIONS API SECURISEES ---
+        async function callSecureAPI(endpoint, method = "GET", body = null) {
+            const token = getJWT();
+            if (!token) {
+                log("Appel API annulé : aucun jeton JWT local trouvé. Connectez-vous d'abord.");
+                showFeedback("Vous devez être connecté pour effectuer cette action.", "error");
+                return;
+            }
+
+            log(`Appel de l'API sécurisée: ${method} ${endpoint}...`);
+            
+            const headers = {
+                "Authorization": `Bearer ${token}`
+            };
+            if (body) {
+                headers["Content-Type"] = "application/json";
+            }
+
+            try {
+                const response = await fetch(endpoint, {
+                    method: method,
+                    headers: headers,
+                    body: body ? JSON.stringify(body) : null
+                });
+
+                // Si pas de contenu (204)
+                if (response.status === 204) {
+                    log("Réponse API reçue (204 No Content)");
+                    showFeedback("Action réussie !", "success");
+                    return;
+                }
+
+                const data = await response.json();
+                log(`Réponse reçue de ${endpoint} (Code HTTP ${response.status})`, data);
+
+                if (!response.ok) {
+                    throw new Error(data.message || `Erreur HTTP ${response.status}`);
+                }
+
+                showFeedback("Action réussie ! Voir les détails dans la console.", "success");
+            } catch (err) {
+                log(`Échec de l'appel à ${endpoint}`, err.message);
+                showFeedback(`Échec de l'action : ${err.message}`, "error");
+            }
+        }
+
+        btnCurrentUser.addEventListener("click", () => {
+            callSecureAPI("/goapi/v1/auth/currentUser");
+        });
+
+        btnValidate.addEventListener("click", () => {
+            const token = getJWT();
+            if (!token) {
+                log("Validation annulée : pas de jeton JWT.");
+                showFeedback("Aucun jeton à valider.", "error");
+                return;
+            }
+            callSecureAPI("/goapi/v1/auth/validateToken", "POST", { token: token });
+        });
+
+        btnListUsers.addEventListener("click", () => {
+            callSecureAPI("/goapi/v1/user");
+        });
+
+        // --- INITIALISATION ---
+        window.addEventListener("DOMContentLoaded", () => {
+            updateUIState();
+            handleOAuthCallback();
+        });
+    </script>
+</body>
 </html>

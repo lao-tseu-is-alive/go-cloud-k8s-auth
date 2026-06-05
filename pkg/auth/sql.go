@@ -1,149 +1,94 @@
 package auth
 
+// SQL query constants for the go_auth schema.
 const (
-	baseAuthListQuery = `
-SELECT 
-       id,
-       type_id,
-       name,
-       description,
-       external_id,
-       inactivated,
-       validated,
-       status, 
-       _created_by as created_by,
-       _created_at as created_at,
-	   st_x(position) as pos_x,
-       st_y(position) as pos_y
-FROM go_auth_db_schema.go_cloud_auth
-WHERE _deleted = false AND position IS NOT NULL
-`
-	go_cloud_authListOrderBy = " ORDER BY _created_at DESC LIMIT $1 OFFSET $2;"
-	listAuthsConditions     = `
- AND type_id = coalesce($3, type_id)
- AND _created_by = coalesce($4, _created_by)
- AND inactivated = coalesce($5, inactivated) 
-`
-	listByExternalIdAuthsCondition = " AND external_id = $3 "
-	searchAuthsConditions          = `
- AND type_id = coalesce($3, type_id)
- AND _created_by = coalesce($4, _created_by)
- AND inactivated = coalesce($5, inactivated)
- AND text_search @@ plainto_tsquery('french', unaccent($6))
-`
-	createAuth = `
-INSERT INTO go_auth_db_schema.go_cloud_auth
-(id, type_id, name, description, comment, external_id, external_ref,
- build_at, status, contained_by, contained_by_old,validated, validated_time, validated_by,
- managed_by, _created_at, _created_by, more_data, text_search, position)
-VALUES ($1, $2, $3, $4, $5, $6, $7,
-        $8, $9, $10, $11, $12, $13, $14,
-        $15, CURRENT_TIMESTAMP, $16, $17,
-        to_tsvector('french', unaccent($3) ||
-                              ' ' || coalesce(unaccent($4), ' ') ||
-                              ' ' || coalesce(unaccent($5), ' ') ),
-        ST_SetSRID(ST_MakePoint($18,$19), 2056));
+	// --- Users ---
+
+	upsertUserByProvider = `
+INSERT INTO go_auth.users (email, name, avatar_url, provider, provider_id, last_login_at)
+VALUES ($1, $2, $3, $4, $5, NOW())
+ON CONFLICT (provider, provider_id) DO UPDATE SET
+    email = EXCLUDED.email,
+    name = COALESCE(NULLIF(EXCLUDED.name, ''), go_auth.users.name),
+    avatar_url = COALESCE(NULLIF(EXCLUDED.avatar_url, ''), go_auth.users.avatar_url),
+    last_login_at = NOW()
+RETURNING id, alternate_app_id, email, name, avatar_url, provider, provider_id, roles, is_active, created_at, last_login_at;
 `
 
-	getAuth = `SELECT id,
-       type_id,
-       name,
-       description,
-       comment,
-       external_id,
-       external_ref,
-       build_at,
-       status,
-       contained_by,
-       contained_by_old,
-       inactivated,
-       inactivated_time,
-       inactivated_by,
-       inactivated_reason,
-       validated,
-       validated_time,
-       validated_by,
-       managed_by,
-       _created_at as created_at,
-       _created_by as created_by,
-       _last_modified_at as last_modified_at,
-       _last_modified_by as last_modified_by,
-       _deleted as deleted,
-       _deleted_at as deleted_at,
-       _deleted_by as deleted_by,
-       more_data, 
-       round(st_x(ST_Centroid(position))::numeric, 2) AS pos_x,
-       round(st_y(ST_Centroid(position))::numeric, 2) AS pos_y
-FROM go_auth_db_schema.go_cloud_auth
-WHERE id = $1;
-`
-	existAuth        = `SELECT COUNT(*) FROM go_auth_db_schema.go_cloud_auth WHERE id = $1;`
-	isActiveAuth     = `SELECT COUNT(*) FROM go_auth_db_schema.go_cloud_auth WHERE inactivated=false AND id = $1;`
-	existAuthOwnedBy = `SELECT COUNT(*) FROM go_auth_db_schema.go_cloud_auth WHERE id = $1 AND _created_by = $2;`
-	countAuth        = `SELECT COUNT(*) FROM go_auth_db_schema.go_cloud_auth `
-	deleteAuth       = `
-UPDATE go_auth_db_schema.go_cloud_auth
-SET
-    _deleted = true,
-    _deleted_by = $1,
-    _deleted_at = CURRENT_TIMESTAMP
-WHERE id = $2;`
-	updateAuth = `
-UPDATE go_auth_db_schema.go_cloud_auth SET
-       type_id = $2,
-       name = $3,
-       description = $4,
-       comment = $5,
-       external_id = $6,
-       external_ref = $7,
-       build_at = $8,
-       status = $9,
-       contained_by = $10,
-       contained_by_old = $11,
-       inactivated = $12,
-       inactivated_time = $13,
-       inactivated_by = $14,
-       inactivated_reason = $15,
-       validated = $16,
-       validated_time = $17,
-       validated_by = $18,
-       managed_by = $19,
-       _last_modified_at = CURRENT_TIMESTAMP,
-       _last_modified_by =$20,
-       more_data =$21,
-       position = ST_SetSRID(ST_MakePoint($22,$23), 2056),
-       text_search = to_tsvector('french', unaccent($3) ||
-                             ' ' || coalesce(unaccent($4), ' ') ||
-                             ' ' || coalesce(unaccent($5), ' ') )
+	getUserByID = `
+SELECT id, alternate_app_id, email, name, avatar_url, provider, provider_id, roles, is_active, created_at, last_login_at
+FROM go_auth.users
 WHERE id = $1;
 `
 
-	baseGeoJsonAuthSearch = `
-SELECT row_to_json(fc)
-FROM (SELECT 'FeatureCollection'                         AS type,
-             coalesce(array_to_json(array_agg(f)), '[]') AS features
-      FROM (SELECT 'Feature'                             AS TYPE,
-                   ST_AsGeoJSON(t.position, 6)::JSON     AS GEOMETRY,
-                   row_to_json((SELECT l
-                                FROM (SELECT id,
-                                             type_id,
-                                             name,
-                                             description,
-                                             external_id,
-                                             inactivated,
-                                             validated,
-                                             status,
-										     (SELECT icon_path FROM go_auth_db_schema.type_go_cloud_auth tt WHERE tt.id = t.type_id) as icon_path,
-                                             _created_by    as created_by,
-                                             _created_at    as created_at,
-                                             st_x(position) as pos_x,
-                                             st_y(position) as pos_y) AS l)) AS properties
-            FROM go_auth_db_schema.go_cloud_auth t
-            WHERE _deleted = false AND position IS NOT NULL
-               
+	getUserByAlternateAppID = `
+SELECT id, alternate_app_id, email, name, avatar_url, provider, provider_id, roles, is_active, created_at, last_login_at
+FROM go_auth.users
+WHERE alternate_app_id = $1;
 `
-	geoJsonListEndOfQuery = `
-        ORDER BY _created_at DESC
-        LIMIT $1 OFFSET $2) AS f) AS fc
+
+	getUserByExternalID = `
+SELECT id, alternate_app_id, email, name, avatar_url, provider, provider_id, roles, is_active, created_at, last_login_at
+FROM go_auth.users
+WHERE alternate_app_id = $1;
+`
+
+	listUsers = `
+SELECT id, alternate_app_id, email, name, is_active, created_at, last_login_at
+FROM go_auth.users
+WHERE ($3::boolean IS NULL OR is_active = $3)
+ORDER BY created_at DESC
+LIMIT $1 OFFSET $2;
+`
+
+	createUser = `
+INSERT INTO go_auth.users (email, name, avatar_url, provider, provider_id, roles, is_active)
+VALUES ($1, $2, $3, $4, $5, $6, $7)
+RETURNING id, alternate_app_id, email, name, avatar_url, provider, provider_id, roles, is_active, created_at, last_login_at;
+`
+
+	updateUser = `
+UPDATE go_auth.users SET
+    email = $2,
+    name = $3,
+    avatar_url = $4,
+    roles = $5,
+    is_active = $6
+WHERE id = $1
+RETURNING id, alternate_app_id, email, name, avatar_url, provider, provider_id, roles, is_active, created_at, last_login_at;
+`
+
+	deleteUser = `
+DELETE FROM go_auth.users WHERE id = $1;
+`
+
+	countUsers = `
+SELECT COUNT(*) FROM go_auth.users
+WHERE ($1::boolean IS NULL OR is_active = $1);
+`
+
+	existUser = `SELECT COUNT(*) FROM go_auth.users WHERE id = $1;`
+
+	updateLastLogin = `UPDATE go_auth.users SET last_login_at = NOW() WHERE id = $1;`
+
+	// --- Groups ---
+
+	getUserGroupIDs = `
+SELECT ug.group_id
+FROM go_auth.user_groups ug
+WHERE ug.user_id = $1;
+`
+
+	// Alternate: get integer-based group IDs for JWT compatibility
+	// We cast UUID to text and use a deterministic mapping via user_groups row number
+	// For Phase 1, we use the user_groups join and return the alternate_app_id of group members
+	// Actually, for JWT Groups []int, we need integer group IDs.
+	// We'll use a helper that returns group alternate IDs or sequential ints.
+	// For now, return group UUIDs and handle mapping in the service layer.
+
+	getUserGroupIDsAsInts = `
+SELECT DISTINCT ug.group_id
+FROM go_auth.user_groups ug
+WHERE ug.user_id = $1;
 `
 )

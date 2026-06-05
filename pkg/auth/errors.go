@@ -4,11 +4,13 @@ import "errors"
 
 // Domain-specific errors for the Auth service
 var (
-	ErrNotFound                         = errors.New("go_cloud_auth not found")
-	ErrAlreadyExists                    = errors.New("go_cloud_auth already exists")
-	ErrTypeAuthNotFound = errors.New("type go_cloud_auth not found")
-	ErrUnauthorized                     = errors.New("unauthorized")
-	ErrInvalidInput                     = errors.New("invalid input")
-	ErrNotOwner                         = errors.New("user is not the owner")
-	ErrAdminRequired                    = errors.New("admin privileges required")
+	ErrUserNotFound  = errors.New("user not found")
+	ErrAlreadyExists = errors.New("user already exists")
+	ErrInvalidInput  = errors.New("invalid input")
+	ErrUnauthorized  = errors.New("unauthorized")
+	ErrNotOwner      = errors.New("user is not the owner")
+	ErrAdminRequired = errors.New("admin privileges required")
+	ErrProviderError = errors.New("oauth provider error")
+	ErrInvalidState  = errors.New("invalid or expired oauth state")
+	ErrUserDisabled  = errors.New("user account is disabled")
 )

@@ -10,7 +10,6 @@ plugins:
     out: gen
     opt:
       - paths=source_relative
-      - simple
 
   # 3. Generate OpenAPI (The Verification Step)
   - remote: buf.build/grpc-ecosystem/openapiv2
@@ -23,6 +22,11 @@ plugins:
       - simple_operation_ids=true   # Makes operation IDs cleaner (e.g. "List" instead of "goCloudDocumentService_List")
 managed:
   enabled: true
+  disable:
+    - file_option: go_package_prefix
+      module: buf.build/googleapis/googleapis
+    - file_option: go_package_prefix
+      module: buf.build/bufbuild/protovalidate
   override:
     - file_option: go_package_prefix
       value: github.com/lao-tseu-is-alive/go-cloud-k8s-auth/gen
