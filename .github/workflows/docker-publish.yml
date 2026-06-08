@@ -51,7 +51,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: '^1.25.5'
+          go-version-file: 'go.mod'
       - run: go version
 
       - name: Add unaccent extension to Postgres DB
@@ -62,16 +62,16 @@ jobs:
       - name: Test
         env:
           PORT: 9090
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
-          JWT_ISSUER_ID: ${{ secrets.JWT_ISSUER_ID }}
-          JWT_CONTEXT_KEY: ${{ secrets.JWT_CONTEXT_KEY }}
-          JWT_DURATION_MINUTES: 240
-          JWT_AUTH_URL: ${{ secrets.JWT_AUTH_URL }}
-          JWT_STATUS_URL: ${{ secrets.JWT_STATUS_URL }}
-          ADMIN_USER: ${{ secrets.ADMIN_USER }}
-          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
-          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
-          ADMIN_ID: ${{ secrets.ADMIN_ID }}
+          JWT_SECRET: "AntigravitySuperSecureDevTokenForGoCloudAuth2026"
+          JWT_ISSUER_ID: "2490AD68-3AA9-4C17-BB49-33C2F202B754"
+          JWT_CONTEXT_KEY: "yourContextKey"
+          JWT_DURATION_MINUTES: 15
+          JWT_AUTH_URL: "/login"
+          JWT_STATUS_URL: "/status"
+          ADMIN_USER: "goadmin"
+          ADMIN_PASSWORD: "Admin_2028"
+          ADMIN_EMAIL: "goadmin@yourdomain.org"
+          ADMIN_ID: 960901
           ALLOWED_HOSTS: ${{ secrets.ALLOWED_HOSTS }}
           DB_DRIVER: postgres
           DB_HOST: 127.0.0.1
