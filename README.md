@@ -289,6 +289,52 @@ curl -X POST http://localhost:9090/goapi/v1/user \
 
 ---
 
+## 💻 Example ConnectRPC Client
+
+We provide a fully functional example ConnectRPC client in [cmd/exampleClient](file:///home/cgil/cgdev/golang/go-cloud-k8s-auth/cmd/exampleClient/main.go) to demonstrate how your cloud-native services can connect to and query this auth microservice in Go.
+
+The client demonstrates:
+1. ConnectRPC client instantiation for both `AuthService` and `UserService`.
+2. Setting up a client-side unary interceptor to inject a JWT Bearer token into outgoing requests.
+3. Performing token validation, retrieving current user profile, and listing users.
+
+### Build the Example Client
+
+```bash
+make build-example-client
+```
+
+### Run the Example Client
+
+Ensure the server is running (e.g. `go run ./cmd/goCloudAuthServer`), then run the client commands:
+
+#### 1. Initiate OAuth Login Flow
+Generates a login link for a provider (defaults to `github`):
+```bash
+./bin/exampleClient -cmd start-oauth -provider github
+# or via make
+make run-example-client ARGS="-cmd start-oauth -provider github"
+```
+
+#### 2. Validate a JWT Token
+```bash
+./bin/exampleClient -cmd validate -token "YOUR_JWT_TOKEN"
+```
+
+#### 3. Fetch Currently Logged-in User Profile
+This requires the token to be sent in the request authorization headers via client interceptor:
+```bash
+./bin/exampleClient -cmd current-user -token "YOUR_JWT_TOKEN"
+```
+
+#### 4. List Registered Users
+Queries the user service (requires admin rights or appropriate JWT token roles):
+```bash
+./bin/exampleClient -cmd list-users -token "YOUR_JWT_TOKEN" -limit 5
+```
+
+---
+
 ### 🧪 Run Automated Tests
 
 To execute tests:

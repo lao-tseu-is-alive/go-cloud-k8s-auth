@@ -61,6 +61,17 @@ build: check-env clean mod-download test openapi-codegen
 	@echo "  >  Building your app binary inside bin directory..."
 	CGO_ENABLED=0 go build ${LDFLAGS} -a -o bin/$(APP_EXECUTABLE) cmd/$(APP_EXECUTABLE)/${APP_EXECUTABLE}.go
 
+.PHONY: build-example-client
+## build-example-client:	will build the example client binary
+build-example-client: mod-download
+	@echo "  >  Building example client binary inside bin directory..."
+	CGO_ENABLED=0 go build -o bin/exampleClient cmd/exampleClient/main.go
+
+.PHONY: run-example-client
+## run-example-client:	will run the example client with arguments (e.g. ARGS="-cmd start-oauth")
+run-example-client:
+	go run cmd/exampleClient/main.go $(ARGS)
+
 .PHONY: exec-bin
 ## exec-bin:	will execute app binary with .env variables in current directory
 exec-bin: bin/$(APP_EXECUTABLE)
@@ -122,8 +133,8 @@ endif
 .PHONY: clean
 ## clean:	will delete you server app binary and remove temporary files like coverage output
 clean:
-	@echo "  >  Removing $(APP_EXECUTABLE) from bin directory..."
-	rm -rf bin/$(APP_EXECUTABLE) coverage.out coverage-all.out ___goCloudAuthServer_test_go.test
+	@echo "  >  Removing binaries and coverage from build directory..."
+	rm -rf bin/$(APP_EXECUTABLE) bin/exampleClient coverage.out coverage-all.out ___goCloudAuthServer_test_go.test
 
 .PHONY: release
 ## release:	will build & tag a clean repo with a version release and push the tag to the remote git

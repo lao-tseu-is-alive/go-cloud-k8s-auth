@@ -26,3 +26,4 @@
 **/node_modules
 proto_third_party/*
 /coverage.txt
+/bin/exampleClient
