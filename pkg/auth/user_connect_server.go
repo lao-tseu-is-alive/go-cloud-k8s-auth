@@ -90,6 +90,12 @@ func (s *UserConnectServer) Create(
 ) (*connect.Response[authv1.CreateResponse], error) {
 	s.Log.Info("Connect: Create called")
 
+	// Ensure caller is an admin
+	_, isAdmin := GetUserFromContext(ctx)
+	if !isAdmin {
+		return nil, s.mapErrorToConnect(ErrAdminRequired)
+	}
+
 	protoUser := req.Msg.User
 	if protoUser == nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("user is required"))
@@ -139,6 +145,12 @@ func (s *UserConnectServer) Update(
 ) (*connect.Response[authv1.UpdateResponse], error) {
 	s.Log.Info("Connect: Update called", "id", req.Msg.Id)
 
+	// Ensure caller is an admin
+	_, isAdmin := GetUserFromContext(ctx)
+	if !isAdmin {
+		return nil, s.mapErrorToConnect(ErrAdminRequired)
+	}
+
 	id, err := uuid.Parse(req.Msg.Id)
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid user ID format"))
@@ -170,6 +182,12 @@ func (s *UserConnectServer) Delete(
 	req *connect.Request[authv1.DeleteRequest],
 ) (*connect.Response[authv1.DeleteResponse], error) {
 	s.Log.Info("Connect: Delete called", "id", req.Msg.Id)
+
+	// Ensure caller is an admin
+	_, isAdmin := GetUserFromContext(ctx)
+	if !isAdmin {
+		return nil, s.mapErrorToConnect(ErrAdminRequired)
+	}
 
 	id, err := uuid.Parse(req.Msg.Id)
 	if err != nil {
