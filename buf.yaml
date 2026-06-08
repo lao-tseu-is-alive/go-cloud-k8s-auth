@@ -6,7 +6,7 @@ modules:
 #name: github.com/lao-tseu-is-alive/go-cloud-k8s-auth
 
 deps:
-  - buf.build/bufbuild/protovalidate
+  - buf.build/bufbuild/protovalidate    #https://github.com/bufbuild/protovalidate
   - buf.build/googleapis/googleapis
 #  - buf.build/grpc-ecosystem/grpc-gateway   # utile pour les annotations http
 lint:

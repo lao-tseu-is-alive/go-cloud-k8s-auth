@@ -140,9 +140,9 @@ curl -X POST http://localhost:9090/auth.v1.UserService/List \
 This section explains how to configure, run, and test the `go-cloud-k8s-auth` authentication and user management service.
 
 ### 📋 Prerequisites
-- **Go 1.21+**
+- **Go 1.25+**
 - **PostgreSQL 14+** (with a database named `go_cloud_auth`)
-- **buf** CLI (to regenerate proto files if you edit them)
+- **buf** CLI (to regenerate proto files if you edit them) [The Buf CLI home page](https://buf.build/product/cli)
 
 ---
 
