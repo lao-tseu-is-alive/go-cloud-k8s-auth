@@ -41,6 +41,39 @@ service AuthService {
       get: "/v1/auth/currentUser"
     };
   };
+
+  // IntrospectToken verifies an opaque token (personal access token) and
+  // returns the identity and scopes attached to it. Public endpoint: the
+  // token itself is the credential (RFC 7662 style, without client auth).
+  rpc IntrospectToken(IntrospectTokenRequest) returns (IntrospectTokenResponse){
+    option (google.api.http) = {
+      post: "/v1/auth/introspect"
+      body: "*"
+    };
+  };
+
+  // CreatePersonalAccessToken creates a long-lived PAT for the current user.
+  // The full token value is returned exactly once and never stored.
+  rpc CreatePersonalAccessToken(CreatePersonalAccessTokenRequest) returns (CreatePersonalAccessTokenResponse){
+    option (google.api.http) = {
+      post: "/v1/auth/tokens"
+      body: "*"
+    };
+  };
+
+  // ListPersonalAccessTokens lists the current user's PATs (metadata only).
+  rpc ListPersonalAccessTokens(ListPersonalAccessTokensRequest) returns (ListPersonalAccessTokensResponse){
+    option (google.api.http) = {
+      get: "/v1/auth/tokens"
+    };
+  };
+
+  // RevokePersonalAccessToken revokes one of the current user's PATs.
+  rpc RevokePersonalAccessToken(RevokePersonalAccessTokenRequest) returns (RevokePersonalAccessTokenResponse){
+    option (google.api.http) = {
+      delete: "/v1/auth/tokens/{id}"
+    };
+  };
 }
 // =========================================================
 // Service: User
@@ -260,3 +293,60 @@ message GetCurrentUserRequest {}   // vide = équivalent à Empty
 message GetCurrentUserResponse {
   User user = 1;
 }
+
+// =========================================================
+// Personal Access Tokens (PAT)
+// =========================================================
+
+// Token introspection (PATs)
+message IntrospectTokenRequest {
+  string token = 1 [(google.api.field_behavior) = REQUIRED];
+}
+
+message IntrospectTokenResponse {
+  bool active = 1;
+  // legacy integer user id (alternate_app_id), what modules use as owner id
+  int64 user_id = 2;
+  string email = 3;
+  string name = 4;
+  repeated string scopes = 5;
+  google.protobuf.Timestamp expires_at = 6;
+}
+
+// Metadata of a personal access token (never contains the token value).
+message PersonalAccessTokenInfo {
+  string id = 1 [(buf.validate.field).string.uuid = true];
+  string name = 2;
+  // displayable first characters of the token, e.g. "pat_a1B2c3D4"
+  string prefix = 3;
+  repeated string scopes = 4;
+  google.protobuf.Timestamp created_at = 5 [(google.api.field_behavior) = OUTPUT_ONLY];
+  google.protobuf.Timestamp expires_at = 6;
+  google.protobuf.Timestamp last_used_at = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+  bool revoked = 8;
+}
+
+message CreatePersonalAccessTokenRequest {
+  string name = 1 [(google.api.field_behavior) = REQUIRED, (buf.validate.field).string.min_len = 1, (buf.validate.field).string.max_len = 100];
+  repeated string scopes = 2;
+  // 0 means the token never expires
+  int32 expires_in_days = 3 [(buf.validate.field).int32.gte = 0];
+}
+
+message CreatePersonalAccessTokenResponse {
+  // full token value, shown exactly once
+  string token = 1;
+  PersonalAccessTokenInfo info = 2;
+}
+
+message ListPersonalAccessTokensRequest {}
+
+message ListPersonalAccessTokensResponse {
+  repeated PersonalAccessTokenInfo tokens = 1;
+}
+
+message RevokePersonalAccessTokenRequest {
+  string id = 1 [(google.api.field_behavior) = REQUIRED, (buf.validate.field).string.uuid = true];
+}
+
+message RevokePersonalAccessTokenResponse {}

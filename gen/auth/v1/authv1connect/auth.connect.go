@@ -46,6 +46,18 @@ const (
 	// AuthServiceGetCurrentUserProcedure is the fully-qualified name of the AuthService's
 	// GetCurrentUser RPC.
 	AuthServiceGetCurrentUserProcedure = "/auth.v1.AuthService/GetCurrentUser"
+	// AuthServiceIntrospectTokenProcedure is the fully-qualified name of the AuthService's
+	// IntrospectToken RPC.
+	AuthServiceIntrospectTokenProcedure = "/auth.v1.AuthService/IntrospectToken"
+	// AuthServiceCreatePersonalAccessTokenProcedure is the fully-qualified name of the AuthService's
+	// CreatePersonalAccessToken RPC.
+	AuthServiceCreatePersonalAccessTokenProcedure = "/auth.v1.AuthService/CreatePersonalAccessToken"
+	// AuthServiceListPersonalAccessTokensProcedure is the fully-qualified name of the AuthService's
+	// ListPersonalAccessTokens RPC.
+	AuthServiceListPersonalAccessTokensProcedure = "/auth.v1.AuthService/ListPersonalAccessTokens"
+	// AuthServiceRevokePersonalAccessTokenProcedure is the fully-qualified name of the AuthService's
+	// RevokePersonalAccessToken RPC.
+	AuthServiceRevokePersonalAccessTokenProcedure = "/auth.v1.AuthService/RevokePersonalAccessToken"
 	// UserServiceListProcedure is the fully-qualified name of the UserService's List RPC.
 	UserServiceListProcedure = "/auth.v1.UserService/List"
 	// UserServiceCreateProcedure is the fully-qualified name of the UserService's Create RPC.
@@ -69,6 +81,17 @@ type AuthServiceClient interface {
 	OAuthCallback(context.Context, *connect.Request[v1.OAuthCallbackRequest]) (*connect.Response[v1.OAuthCallbackResponse], error)
 	ValidateToken(context.Context, *connect.Request[v1.ValidateTokenRequest]) (*connect.Response[v1.ValidateTokenResponse], error)
 	GetCurrentUser(context.Context, *connect.Request[v1.GetCurrentUserRequest]) (*connect.Response[v1.GetCurrentUserResponse], error)
+	// IntrospectToken verifies an opaque token (personal access token) and
+	// returns the identity and scopes attached to it. Public endpoint: the
+	// token itself is the credential (RFC 7662 style, without client auth).
+	IntrospectToken(context.Context, *connect.Request[v1.IntrospectTokenRequest]) (*connect.Response[v1.IntrospectTokenResponse], error)
+	// CreatePersonalAccessToken creates a long-lived PAT for the current user.
+	// The full token value is returned exactly once and never stored.
+	CreatePersonalAccessToken(context.Context, *connect.Request[v1.CreatePersonalAccessTokenRequest]) (*connect.Response[v1.CreatePersonalAccessTokenResponse], error)
+	// ListPersonalAccessTokens lists the current user's PATs (metadata only).
+	ListPersonalAccessTokens(context.Context, *connect.Request[v1.ListPersonalAccessTokensRequest]) (*connect.Response[v1.ListPersonalAccessTokensResponse], error)
+	// RevokePersonalAccessToken revokes one of the current user's PATs.
+	RevokePersonalAccessToken(context.Context, *connect.Request[v1.RevokePersonalAccessTokenRequest]) (*connect.Response[v1.RevokePersonalAccessTokenResponse], error)
 }
 
 // NewAuthServiceClient constructs a client for the auth.v1.AuthService service. By default, it uses
@@ -106,15 +129,43 @@ func NewAuthServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(authServiceMethods.ByName("GetCurrentUser")),
 			connect.WithClientOptions(opts...),
 		),
+		introspectToken: connect.NewClient[v1.IntrospectTokenRequest, v1.IntrospectTokenResponse](
+			httpClient,
+			baseURL+AuthServiceIntrospectTokenProcedure,
+			connect.WithSchema(authServiceMethods.ByName("IntrospectToken")),
+			connect.WithClientOptions(opts...),
+		),
+		createPersonalAccessToken: connect.NewClient[v1.CreatePersonalAccessTokenRequest, v1.CreatePersonalAccessTokenResponse](
+			httpClient,
+			baseURL+AuthServiceCreatePersonalAccessTokenProcedure,
+			connect.WithSchema(authServiceMethods.ByName("CreatePersonalAccessToken")),
+			connect.WithClientOptions(opts...),
+		),
+		listPersonalAccessTokens: connect.NewClient[v1.ListPersonalAccessTokensRequest, v1.ListPersonalAccessTokensResponse](
+			httpClient,
+			baseURL+AuthServiceListPersonalAccessTokensProcedure,
+			connect.WithSchema(authServiceMethods.ByName("ListPersonalAccessTokens")),
+			connect.WithClientOptions(opts...),
+		),
+		revokePersonalAccessToken: connect.NewClient[v1.RevokePersonalAccessTokenRequest, v1.RevokePersonalAccessTokenResponse](
+			httpClient,
+			baseURL+AuthServiceRevokePersonalAccessTokenProcedure,
+			connect.WithSchema(authServiceMethods.ByName("RevokePersonalAccessToken")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // authServiceClient implements AuthServiceClient.
 type authServiceClient struct {
-	startOAuth     *connect.Client[v1.StartOAuthRequest, v1.StartOAuthResponse]
-	oAuthCallback  *connect.Client[v1.OAuthCallbackRequest, v1.OAuthCallbackResponse]
-	validateToken  *connect.Client[v1.ValidateTokenRequest, v1.ValidateTokenResponse]
-	getCurrentUser *connect.Client[v1.GetCurrentUserRequest, v1.GetCurrentUserResponse]
+	startOAuth                *connect.Client[v1.StartOAuthRequest, v1.StartOAuthResponse]
+	oAuthCallback             *connect.Client[v1.OAuthCallbackRequest, v1.OAuthCallbackResponse]
+	validateToken             *connect.Client[v1.ValidateTokenRequest, v1.ValidateTokenResponse]
+	getCurrentUser            *connect.Client[v1.GetCurrentUserRequest, v1.GetCurrentUserResponse]
+	introspectToken           *connect.Client[v1.IntrospectTokenRequest, v1.IntrospectTokenResponse]
+	createPersonalAccessToken *connect.Client[v1.CreatePersonalAccessTokenRequest, v1.CreatePersonalAccessTokenResponse]
+	listPersonalAccessTokens  *connect.Client[v1.ListPersonalAccessTokensRequest, v1.ListPersonalAccessTokensResponse]
+	revokePersonalAccessToken *connect.Client[v1.RevokePersonalAccessTokenRequest, v1.RevokePersonalAccessTokenResponse]
 }
 
 // StartOAuth calls auth.v1.AuthService.StartOAuth.
@@ -137,12 +188,43 @@ func (c *authServiceClient) GetCurrentUser(ctx context.Context, req *connect.Req
 	return c.getCurrentUser.CallUnary(ctx, req)
 }
 
+// IntrospectToken calls auth.v1.AuthService.IntrospectToken.
+func (c *authServiceClient) IntrospectToken(ctx context.Context, req *connect.Request[v1.IntrospectTokenRequest]) (*connect.Response[v1.IntrospectTokenResponse], error) {
+	return c.introspectToken.CallUnary(ctx, req)
+}
+
+// CreatePersonalAccessToken calls auth.v1.AuthService.CreatePersonalAccessToken.
+func (c *authServiceClient) CreatePersonalAccessToken(ctx context.Context, req *connect.Request[v1.CreatePersonalAccessTokenRequest]) (*connect.Response[v1.CreatePersonalAccessTokenResponse], error) {
+	return c.createPersonalAccessToken.CallUnary(ctx, req)
+}
+
+// ListPersonalAccessTokens calls auth.v1.AuthService.ListPersonalAccessTokens.
+func (c *authServiceClient) ListPersonalAccessTokens(ctx context.Context, req *connect.Request[v1.ListPersonalAccessTokensRequest]) (*connect.Response[v1.ListPersonalAccessTokensResponse], error) {
+	return c.listPersonalAccessTokens.CallUnary(ctx, req)
+}
+
+// RevokePersonalAccessToken calls auth.v1.AuthService.RevokePersonalAccessToken.
+func (c *authServiceClient) RevokePersonalAccessToken(ctx context.Context, req *connect.Request[v1.RevokePersonalAccessTokenRequest]) (*connect.Response[v1.RevokePersonalAccessTokenResponse], error) {
+	return c.revokePersonalAccessToken.CallUnary(ctx, req)
+}
+
 // AuthServiceHandler is an implementation of the auth.v1.AuthService service.
 type AuthServiceHandler interface {
 	StartOAuth(context.Context, *connect.Request[v1.StartOAuthRequest]) (*connect.Response[v1.StartOAuthResponse], error)
 	OAuthCallback(context.Context, *connect.Request[v1.OAuthCallbackRequest]) (*connect.Response[v1.OAuthCallbackResponse], error)
 	ValidateToken(context.Context, *connect.Request[v1.ValidateTokenRequest]) (*connect.Response[v1.ValidateTokenResponse], error)
 	GetCurrentUser(context.Context, *connect.Request[v1.GetCurrentUserRequest]) (*connect.Response[v1.GetCurrentUserResponse], error)
+	// IntrospectToken verifies an opaque token (personal access token) and
+	// returns the identity and scopes attached to it. Public endpoint: the
+	// token itself is the credential (RFC 7662 style, without client auth).
+	IntrospectToken(context.Context, *connect.Request[v1.IntrospectTokenRequest]) (*connect.Response[v1.IntrospectTokenResponse], error)
+	// CreatePersonalAccessToken creates a long-lived PAT for the current user.
+	// The full token value is returned exactly once and never stored.
+	CreatePersonalAccessToken(context.Context, *connect.Request[v1.CreatePersonalAccessTokenRequest]) (*connect.Response[v1.CreatePersonalAccessTokenResponse], error)
+	// ListPersonalAccessTokens lists the current user's PATs (metadata only).
+	ListPersonalAccessTokens(context.Context, *connect.Request[v1.ListPersonalAccessTokensRequest]) (*connect.Response[v1.ListPersonalAccessTokensResponse], error)
+	// RevokePersonalAccessToken revokes one of the current user's PATs.
+	RevokePersonalAccessToken(context.Context, *connect.Request[v1.RevokePersonalAccessTokenRequest]) (*connect.Response[v1.RevokePersonalAccessTokenResponse], error)
 }
 
 // NewAuthServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -176,6 +258,30 @@ func NewAuthServiceHandler(svc AuthServiceHandler, opts ...connect.HandlerOption
 		connect.WithSchema(authServiceMethods.ByName("GetCurrentUser")),
 		connect.WithHandlerOptions(opts...),
 	)
+	authServiceIntrospectTokenHandler := connect.NewUnaryHandler(
+		AuthServiceIntrospectTokenProcedure,
+		svc.IntrospectToken,
+		connect.WithSchema(authServiceMethods.ByName("IntrospectToken")),
+		connect.WithHandlerOptions(opts...),
+	)
+	authServiceCreatePersonalAccessTokenHandler := connect.NewUnaryHandler(
+		AuthServiceCreatePersonalAccessTokenProcedure,
+		svc.CreatePersonalAccessToken,
+		connect.WithSchema(authServiceMethods.ByName("CreatePersonalAccessToken")),
+		connect.WithHandlerOptions(opts...),
+	)
+	authServiceListPersonalAccessTokensHandler := connect.NewUnaryHandler(
+		AuthServiceListPersonalAccessTokensProcedure,
+		svc.ListPersonalAccessTokens,
+		connect.WithSchema(authServiceMethods.ByName("ListPersonalAccessTokens")),
+		connect.WithHandlerOptions(opts...),
+	)
+	authServiceRevokePersonalAccessTokenHandler := connect.NewUnaryHandler(
+		AuthServiceRevokePersonalAccessTokenProcedure,
+		svc.RevokePersonalAccessToken,
+		connect.WithSchema(authServiceMethods.ByName("RevokePersonalAccessToken")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/auth.v1.AuthService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case AuthServiceStartOAuthProcedure:
@@ -186,6 +292,14 @@ func NewAuthServiceHandler(svc AuthServiceHandler, opts ...connect.HandlerOption
 			authServiceValidateTokenHandler.ServeHTTP(w, r)
 		case AuthServiceGetCurrentUserProcedure:
 			authServiceGetCurrentUserHandler.ServeHTTP(w, r)
+		case AuthServiceIntrospectTokenProcedure:
+			authServiceIntrospectTokenHandler.ServeHTTP(w, r)
+		case AuthServiceCreatePersonalAccessTokenProcedure:
+			authServiceCreatePersonalAccessTokenHandler.ServeHTTP(w, r)
+		case AuthServiceListPersonalAccessTokensProcedure:
+			authServiceListPersonalAccessTokensHandler.ServeHTTP(w, r)
+		case AuthServiceRevokePersonalAccessTokenProcedure:
+			authServiceRevokePersonalAccessTokenHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -209,6 +323,22 @@ func (UnimplementedAuthServiceHandler) ValidateToken(context.Context, *connect.R
 
 func (UnimplementedAuthServiceHandler) GetCurrentUser(context.Context, *connect.Request[v1.GetCurrentUserRequest]) (*connect.Response[v1.GetCurrentUserResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("auth.v1.AuthService.GetCurrentUser is not implemented"))
+}
+
+func (UnimplementedAuthServiceHandler) IntrospectToken(context.Context, *connect.Request[v1.IntrospectTokenRequest]) (*connect.Response[v1.IntrospectTokenResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("auth.v1.AuthService.IntrospectToken is not implemented"))
+}
+
+func (UnimplementedAuthServiceHandler) CreatePersonalAccessToken(context.Context, *connect.Request[v1.CreatePersonalAccessTokenRequest]) (*connect.Response[v1.CreatePersonalAccessTokenResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("auth.v1.AuthService.CreatePersonalAccessToken is not implemented"))
+}
+
+func (UnimplementedAuthServiceHandler) ListPersonalAccessTokens(context.Context, *connect.Request[v1.ListPersonalAccessTokensRequest]) (*connect.Response[v1.ListPersonalAccessTokensResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("auth.v1.AuthService.ListPersonalAccessTokens is not implemented"))
+}
+
+func (UnimplementedAuthServiceHandler) RevokePersonalAccessToken(context.Context, *connect.Request[v1.RevokePersonalAccessTokenRequest]) (*connect.Response[v1.RevokePersonalAccessTokenResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("auth.v1.AuthService.RevokePersonalAccessToken is not implemented"))
 }
 
 // UserServiceClient is a client for the auth.v1.UserService service.

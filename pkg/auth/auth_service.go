@@ -80,34 +80,60 @@ func (s *AuthBusinessService) HandleCallback(ctx context.Context, provider, code
 		return "", nil, ErrInvalidState
 	}
 
-	// 2. Get OAuth config for provider
+	// 2-6. Exchange code, fetch profile, upsert user, check active
+	user, err = s.AuthenticateOAuthUser(ctx, provider, code, "")
+	if err != nil {
+		return "", nil, err
+	}
+
+	// 7-8. Generate JWT token with group claims
+	token, err := s.IssueJwtForUser(ctx, user)
+	if err != nil {
+		return "", nil, err
+	}
+
+	s.Log.Info("HandleCallback: user authenticated", "email", user.Email, "provider", provider, "userId", user.AlternateAppID)
+	return token, user, nil
+}
+
+// AuthenticateOAuthUser exchanges an authorization code for the provider's
+// access token, fetches the user profile, upserts the user in the database and
+// checks that the account is active. It does NOT validate the CSRF state nor
+// issue any credential, so both the Connect RPC callback and the browser
+// cookie flow can share it. redirectURL overrides the configured OAuth
+// redirect URL for the code exchange (required when the authorization request
+// used a different callback than the configured one); pass "" to keep the
+// configured value.
+func (s *AuthBusinessService) AuthenticateOAuthUser(ctx context.Context, provider, code, redirectURL string) (*User, error) {
 	cfg, ok := s.OAuthConfigs[provider]
 	if !ok {
-		return "", nil, fmt.Errorf("%w: unsupported provider %q", ErrProviderError, provider)
+		return nil, fmt.Errorf("%w: unsupported provider %q", ErrProviderError, provider)
+	}
+	if redirectURL != "" {
+		cfgCopy := *cfg
+		cfgCopy.RedirectURL = redirectURL
+		cfg = &cfgCopy
 	}
 
-	// 3. Exchange authorization code for access token
 	oauthToken, err := cfg.Exchange(ctx, code)
 	if err != nil {
-		return "", nil, fmt.Errorf("%w: token exchange failed: %v", ErrProviderError, err)
+		return nil, fmt.Errorf("%w: token exchange failed: %v", ErrProviderError, err)
 	}
 
-	// 4. Fetch user info from provider
 	fetchFn, ok := UserInfoFetcher[provider]
 	if !ok {
-		return "", nil, fmt.Errorf("%w: no user info fetcher for provider %q", ErrProviderError, provider)
+		return nil, fmt.Errorf("%w: no user info fetcher for provider %q", ErrProviderError, provider)
 	}
 	oauthUserInfo, err := fetchFn(ctx, oauthToken)
 	if err != nil {
-		return "", nil, fmt.Errorf("%w: failed to fetch user info: %v", ErrProviderError, err)
+		return nil, fmt.Errorf("%w: failed to fetch user info: %v", ErrProviderError, err)
 	}
 
 	if oauthUserInfo.Email == "" {
-		return "", nil, fmt.Errorf("%w: provider returned no email", ErrProviderError)
+		return nil, fmt.Errorf("%w: provider returned no email", ErrProviderError)
 	}
 
-	// 5. Upsert user in database
-	user, err = s.Store.UpsertByProvider(ctx,
+	user, err := s.Store.UpsertByProvider(ctx,
 		oauthUserInfo.Email,
 		oauthUserInfo.Name,
 		oauthUserInfo.AvatarURL,
@@ -115,30 +141,27 @@ func (s *AuthBusinessService) HandleCallback(ctx context.Context, provider, code
 		oauthUserInfo.ProviderID,
 	)
 	if err != nil {
-		return "", nil, fmt.Errorf("failed to upsert user: %w", err)
+		return nil, fmt.Errorf("failed to upsert user: %w", err)
 	}
 
-	// 6. Check if user is active
 	if !user.IsActive {
-		return "", nil, ErrUserDisabled
+		return nil, ErrUserDisabled
 	}
+	return user, nil
+}
 
-	// 7. Fetch group IDs for JWT claims
+// IssueJwtForUser generates a signed JWT for the given user, including group claims.
+func (s *AuthBusinessService) IssueJwtForUser(ctx context.Context, user *User) (string, error) {
 	groupIDs, err := s.getGroupIDsAsInts(ctx, user)
 	if err != nil {
 		s.Log.Warn("failed to fetch group IDs, using empty", "error", err)
 		groupIDs = []int{}
 	}
-
-	// 8. Generate JWT token
-	userInfo := DomainUserToJwtUserInfo(user, groupIDs)
-	token, err := s.JwtCheck.GetTokenFromUserInfo(userInfo)
+	token, err := s.JwtCheck.GetTokenFromUserInfo(DomainUserToJwtUserInfo(user, groupIDs))
 	if err != nil {
-		return "", nil, fmt.Errorf("failed to generate JWT: %w", err)
+		return "", fmt.Errorf("failed to generate JWT: %w", err)
 	}
-
-	s.Log.Info("HandleCallback: user authenticated", "email", user.Email, "provider", provider, "userId", user.AlternateAppID)
-	return token.String(), user, nil
+	return token.String(), nil
 }
 
 // ValidateToken validates a JWT token and returns the associated user.

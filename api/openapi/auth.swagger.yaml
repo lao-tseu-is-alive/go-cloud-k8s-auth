@@ -231,6 +231,30 @@ paths:
             $ref: '#/definitions/rpcStatus'
       tags:
         - AuthService
+  /v1/auth/introspect:
+    post:
+      summary: |-
+        IntrospectToken verifies an opaque token (personal access token) and
+        returns the identity and scopes attached to it. Public endpoint: the
+        token itself is the credential (RFC 7662 style, without client auth).
+      operationId: IntrospectToken
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1IntrospectTokenResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/v1IntrospectTokenRequest'
+      tags:
+        - AuthService
   /v1/auth/start:
     post:
       operationId: StartOAuth
@@ -249,6 +273,63 @@ paths:
           required: true
           schema:
             $ref: '#/definitions/v1StartOAuthRequest'
+      tags:
+        - AuthService
+  /v1/auth/tokens:
+    get:
+      summary: ListPersonalAccessTokens lists the current user's PATs (metadata only).
+      operationId: ListPersonalAccessTokens
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1ListPersonalAccessTokensResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      tags:
+        - AuthService
+    post:
+      summary: |-
+        CreatePersonalAccessToken creates a long-lived PAT for the current user.
+        The full token value is returned exactly once and never stored.
+      operationId: CreatePersonalAccessToken
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1CreatePersonalAccessTokenResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/v1CreatePersonalAccessTokenRequest'
+      tags:
+        - AuthService
+  /v1/auth/tokens/{id}:
+    delete:
+      summary: RevokePersonalAccessToken revokes one of the current user's PATs.
+      operationId: RevokePersonalAccessToken
+      responses:
+        "200":
+          description: A successful response.
+          schema:
+            $ref: '#/definitions/v1RevokePersonalAccessTokenResponse'
+        default:
+          description: An unexpected error response.
+          schema:
+            $ref: '#/definitions/rpcStatus'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: string
       tags:
         - AuthService
   /v1/auth/validateToken:
@@ -297,6 +378,29 @@ definitions:
       count:
         type: integer
         format: int32
+  v1CreatePersonalAccessTokenRequest:
+    type: object
+    properties:
+      name:
+        type: string
+      scopes:
+        type: array
+        items:
+          type: string
+      expiresInDays:
+        type: integer
+        format: int32
+        title: 0 means the token never expires
+    required:
+      - name
+  v1CreatePersonalAccessTokenResponse:
+    type: object
+    properties:
+      token:
+        type: string
+        title: full token value, shown exactly once
+      info:
+        $ref: '#/definitions/v1PersonalAccessTokenInfo'
   v1CreateResponse:
     type: object
     properties:
@@ -320,6 +424,42 @@ definitions:
     properties:
       user:
         $ref: '#/definitions/v1User'
+  v1IntrospectTokenRequest:
+    type: object
+    properties:
+      token:
+        type: string
+    title: Token introspection (PATs)
+    required:
+      - token
+  v1IntrospectTokenResponse:
+    type: object
+    properties:
+      active:
+        type: boolean
+      userId:
+        type: string
+        format: int64
+        title: legacy integer user id (alternate_app_id), what modules use as owner id
+      email:
+        type: string
+      name:
+        type: string
+      scopes:
+        type: array
+        items:
+          type: string
+      expiresAt:
+        type: string
+        format: date-time
+  v1ListPersonalAccessTokensResponse:
+    type: object
+    properties:
+      tokens:
+        type: array
+        items:
+          type: object
+          $ref: '#/definitions/v1PersonalAccessTokenInfo'
   v1ListResponse:
     type: object
     properties:
@@ -344,6 +484,36 @@ definitions:
         type: string
       user:
         $ref: '#/definitions/v1User'
+  v1PersonalAccessTokenInfo:
+    type: object
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      prefix:
+        type: string
+        title: displayable first characters of the token, e.g. "pat_a1B2c3D4"
+      scopes:
+        type: array
+        items:
+          type: string
+      createdAt:
+        type: string
+        format: date-time
+        readOnly: true
+      expiresAt:
+        type: string
+        format: date-time
+      lastUsedAt:
+        type: string
+        format: date-time
+        readOnly: true
+      revoked:
+        type: boolean
+    description: Metadata of a personal access token (never contains the token value).
+  v1RevokePersonalAccessTokenResponse:
+    type: object
   v1StartOAuthRequest:
     type: object
     properties:

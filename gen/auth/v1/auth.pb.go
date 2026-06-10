@@ -1359,6 +1359,512 @@ func (x *GetCurrentUserResponse) GetUser() *User {
 	return nil
 }
 
+// Token introspection (PATs)
+type IntrospectTokenRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Token         string                 `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *IntrospectTokenRequest) Reset() {
+	*x = IntrospectTokenRequest{}
+	mi := &file_auth_v1_auth_proto_msgTypes[25]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *IntrospectTokenRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*IntrospectTokenRequest) ProtoMessage() {}
+
+func (x *IntrospectTokenRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_auth_v1_auth_proto_msgTypes[25]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use IntrospectTokenRequest.ProtoReflect.Descriptor instead.
+func (*IntrospectTokenRequest) Descriptor() ([]byte, []int) {
+	return file_auth_v1_auth_proto_rawDescGZIP(), []int{25}
+}
+
+func (x *IntrospectTokenRequest) GetToken() string {
+	if x != nil {
+		return x.Token
+	}
+	return ""
+}
+
+type IntrospectTokenResponse struct {
+	state  protoimpl.MessageState `protogen:"open.v1"`
+	Active bool                   `protobuf:"varint,1,opt,name=active,proto3" json:"active,omitempty"`
+	// legacy integer user id (alternate_app_id), what modules use as owner id
+	UserId        int64                  `protobuf:"varint,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Email         string                 `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
+	Name          string                 `protobuf:"bytes,4,opt,name=name,proto3" json:"name,omitempty"`
+	Scopes        []string               `protobuf:"bytes,5,rep,name=scopes,proto3" json:"scopes,omitempty"`
+	ExpiresAt     *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=expires_at,json=expiresAt,proto3" json:"expires_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *IntrospectTokenResponse) Reset() {
+	*x = IntrospectTokenResponse{}
+	mi := &file_auth_v1_auth_proto_msgTypes[26]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *IntrospectTokenResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*IntrospectTokenResponse) ProtoMessage() {}
+
+func (x *IntrospectTokenResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_auth_v1_auth_proto_msgTypes[26]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use IntrospectTokenResponse.ProtoReflect.Descriptor instead.
+func (*IntrospectTokenResponse) Descriptor() ([]byte, []int) {
+	return file_auth_v1_auth_proto_rawDescGZIP(), []int{26}
+}
+
+func (x *IntrospectTokenResponse) GetActive() bool {
+	if x != nil {
+		return x.Active
+	}
+	return false
+}
+
+func (x *IntrospectTokenResponse) GetUserId() int64 {
+	if x != nil {
+		return x.UserId
+	}
+	return 0
+}
+
+func (x *IntrospectTokenResponse) GetEmail() string {
+	if x != nil {
+		return x.Email
+	}
+	return ""
+}
+
+func (x *IntrospectTokenResponse) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *IntrospectTokenResponse) GetScopes() []string {
+	if x != nil {
+		return x.Scopes
+	}
+	return nil
+}
+
+func (x *IntrospectTokenResponse) GetExpiresAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.ExpiresAt
+	}
+	return nil
+}
+
+// Metadata of a personal access token (never contains the token value).
+type PersonalAccessTokenInfo struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	Id    string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name  string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	// displayable first characters of the token, e.g. "pat_a1B2c3D4"
+	Prefix        string                 `protobuf:"bytes,3,opt,name=prefix,proto3" json:"prefix,omitempty"`
+	Scopes        []string               `protobuf:"bytes,4,rep,name=scopes,proto3" json:"scopes,omitempty"`
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	ExpiresAt     *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=expires_at,json=expiresAt,proto3" json:"expires_at,omitempty"`
+	LastUsedAt    *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=last_used_at,json=lastUsedAt,proto3" json:"last_used_at,omitempty"`
+	Revoked       bool                   `protobuf:"varint,8,opt,name=revoked,proto3" json:"revoked,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PersonalAccessTokenInfo) Reset() {
+	*x = PersonalAccessTokenInfo{}
+	mi := &file_auth_v1_auth_proto_msgTypes[27]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PersonalAccessTokenInfo) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PersonalAccessTokenInfo) ProtoMessage() {}
+
+func (x *PersonalAccessTokenInfo) ProtoReflect() protoreflect.Message {
+	mi := &file_auth_v1_auth_proto_msgTypes[27]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PersonalAccessTokenInfo.ProtoReflect.Descriptor instead.
+func (*PersonalAccessTokenInfo) Descriptor() ([]byte, []int) {
+	return file_auth_v1_auth_proto_rawDescGZIP(), []int{27}
+}
+
+func (x *PersonalAccessTokenInfo) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *PersonalAccessTokenInfo) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *PersonalAccessTokenInfo) GetPrefix() string {
+	if x != nil {
+		return x.Prefix
+	}
+	return ""
+}
+
+func (x *PersonalAccessTokenInfo) GetScopes() []string {
+	if x != nil {
+		return x.Scopes
+	}
+	return nil
+}
+
+func (x *PersonalAccessTokenInfo) GetCreatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return nil
+}
+
+func (x *PersonalAccessTokenInfo) GetExpiresAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.ExpiresAt
+	}
+	return nil
+}
+
+func (x *PersonalAccessTokenInfo) GetLastUsedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.LastUsedAt
+	}
+	return nil
+}
+
+func (x *PersonalAccessTokenInfo) GetRevoked() bool {
+	if x != nil {
+		return x.Revoked
+	}
+	return false
+}
+
+type CreatePersonalAccessTokenRequest struct {
+	state  protoimpl.MessageState `protogen:"open.v1"`
+	Name   string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Scopes []string               `protobuf:"bytes,2,rep,name=scopes,proto3" json:"scopes,omitempty"`
+	// 0 means the token never expires
+	ExpiresInDays int32 `protobuf:"varint,3,opt,name=expires_in_days,json=expiresInDays,proto3" json:"expires_in_days,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreatePersonalAccessTokenRequest) Reset() {
+	*x = CreatePersonalAccessTokenRequest{}
+	mi := &file_auth_v1_auth_proto_msgTypes[28]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreatePersonalAccessTokenRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreatePersonalAccessTokenRequest) ProtoMessage() {}
+
+func (x *CreatePersonalAccessTokenRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_auth_v1_auth_proto_msgTypes[28]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreatePersonalAccessTokenRequest.ProtoReflect.Descriptor instead.
+func (*CreatePersonalAccessTokenRequest) Descriptor() ([]byte, []int) {
+	return file_auth_v1_auth_proto_rawDescGZIP(), []int{28}
+}
+
+func (x *CreatePersonalAccessTokenRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *CreatePersonalAccessTokenRequest) GetScopes() []string {
+	if x != nil {
+		return x.Scopes
+	}
+	return nil
+}
+
+func (x *CreatePersonalAccessTokenRequest) GetExpiresInDays() int32 {
+	if x != nil {
+		return x.ExpiresInDays
+	}
+	return 0
+}
+
+type CreatePersonalAccessTokenResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// full token value, shown exactly once
+	Token         string                   `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
+	Info          *PersonalAccessTokenInfo `protobuf:"bytes,2,opt,name=info,proto3" json:"info,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreatePersonalAccessTokenResponse) Reset() {
+	*x = CreatePersonalAccessTokenResponse{}
+	mi := &file_auth_v1_auth_proto_msgTypes[29]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreatePersonalAccessTokenResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreatePersonalAccessTokenResponse) ProtoMessage() {}
+
+func (x *CreatePersonalAccessTokenResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_auth_v1_auth_proto_msgTypes[29]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreatePersonalAccessTokenResponse.ProtoReflect.Descriptor instead.
+func (*CreatePersonalAccessTokenResponse) Descriptor() ([]byte, []int) {
+	return file_auth_v1_auth_proto_rawDescGZIP(), []int{29}
+}
+
+func (x *CreatePersonalAccessTokenResponse) GetToken() string {
+	if x != nil {
+		return x.Token
+	}
+	return ""
+}
+
+func (x *CreatePersonalAccessTokenResponse) GetInfo() *PersonalAccessTokenInfo {
+	if x != nil {
+		return x.Info
+	}
+	return nil
+}
+
+type ListPersonalAccessTokensRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListPersonalAccessTokensRequest) Reset() {
+	*x = ListPersonalAccessTokensRequest{}
+	mi := &file_auth_v1_auth_proto_msgTypes[30]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListPersonalAccessTokensRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListPersonalAccessTokensRequest) ProtoMessage() {}
+
+func (x *ListPersonalAccessTokensRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_auth_v1_auth_proto_msgTypes[30]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListPersonalAccessTokensRequest.ProtoReflect.Descriptor instead.
+func (*ListPersonalAccessTokensRequest) Descriptor() ([]byte, []int) {
+	return file_auth_v1_auth_proto_rawDescGZIP(), []int{30}
+}
+
+type ListPersonalAccessTokensResponse struct {
+	state         protoimpl.MessageState     `protogen:"open.v1"`
+	Tokens        []*PersonalAccessTokenInfo `protobuf:"bytes,1,rep,name=tokens,proto3" json:"tokens,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListPersonalAccessTokensResponse) Reset() {
+	*x = ListPersonalAccessTokensResponse{}
+	mi := &file_auth_v1_auth_proto_msgTypes[31]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListPersonalAccessTokensResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListPersonalAccessTokensResponse) ProtoMessage() {}
+
+func (x *ListPersonalAccessTokensResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_auth_v1_auth_proto_msgTypes[31]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListPersonalAccessTokensResponse.ProtoReflect.Descriptor instead.
+func (*ListPersonalAccessTokensResponse) Descriptor() ([]byte, []int) {
+	return file_auth_v1_auth_proto_rawDescGZIP(), []int{31}
+}
+
+func (x *ListPersonalAccessTokensResponse) GetTokens() []*PersonalAccessTokenInfo {
+	if x != nil {
+		return x.Tokens
+	}
+	return nil
+}
+
+type RevokePersonalAccessTokenRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RevokePersonalAccessTokenRequest) Reset() {
+	*x = RevokePersonalAccessTokenRequest{}
+	mi := &file_auth_v1_auth_proto_msgTypes[32]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RevokePersonalAccessTokenRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RevokePersonalAccessTokenRequest) ProtoMessage() {}
+
+func (x *RevokePersonalAccessTokenRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_auth_v1_auth_proto_msgTypes[32]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RevokePersonalAccessTokenRequest.ProtoReflect.Descriptor instead.
+func (*RevokePersonalAccessTokenRequest) Descriptor() ([]byte, []int) {
+	return file_auth_v1_auth_proto_rawDescGZIP(), []int{32}
+}
+
+func (x *RevokePersonalAccessTokenRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+type RevokePersonalAccessTokenResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RevokePersonalAccessTokenResponse) Reset() {
+	*x = RevokePersonalAccessTokenResponse{}
+	mi := &file_auth_v1_auth_proto_msgTypes[33]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RevokePersonalAccessTokenResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RevokePersonalAccessTokenResponse) ProtoMessage() {}
+
+func (x *RevokePersonalAccessTokenResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_auth_v1_auth_proto_msgTypes[33]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RevokePersonalAccessTokenResponse.ProtoReflect.Descriptor instead.
+func (*RevokePersonalAccessTokenResponse) Descriptor() ([]byte, []int) {
+	return file_auth_v1_auth_proto_rawDescGZIP(), []int{33}
+}
+
 var File_auth_v1_auth_proto protoreflect.FileDescriptor
 
 const file_auth_v1_auth_proto_rawDesc = "" +
@@ -1449,13 +1955,52 @@ const file_auth_v1_auth_proto_rawDesc = "" +
 	"\x04user\x18\x02 \x01(\v2\r.auth.v1.UserR\x04user\"\x17\n" +
 	"\x15GetCurrentUserRequest\";\n" +
 	"\x16GetCurrentUserResponse\x12!\n" +
-	"\x04user\x18\x01 \x01(\v2\r.auth.v1.UserR\x04user2\xc1\x03\n" +
+	"\x04user\x18\x01 \x01(\v2\r.auth.v1.UserR\x04user\"3\n" +
+	"\x16IntrospectTokenRequest\x12\x19\n" +
+	"\x05token\x18\x01 \x01(\tB\x03\xe0A\x02R\x05token\"\xc7\x01\n" +
+	"\x17IntrospectTokenResponse\x12\x16\n" +
+	"\x06active\x18\x01 \x01(\bR\x06active\x12\x17\n" +
+	"\auser_id\x18\x02 \x01(\x03R\x06userId\x12\x14\n" +
+	"\x05email\x18\x03 \x01(\tR\x05email\x12\x12\n" +
+	"\x04name\x18\x04 \x01(\tR\x04name\x12\x16\n" +
+	"\x06scopes\x18\x05 \x03(\tR\x06scopes\x129\n" +
+	"\n" +
+	"expires_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\texpiresAt\"\xcf\x02\n" +
+	"\x17PersonalAccessTokenInfo\x12\x18\n" +
+	"\x02id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x02id\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x16\n" +
+	"\x06prefix\x18\x03 \x01(\tR\x06prefix\x12\x16\n" +
+	"\x06scopes\x18\x04 \x03(\tR\x06scopes\x12>\n" +
+	"\n" +
+	"created_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tcreatedAt\x129\n" +
+	"\n" +
+	"expires_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\texpiresAt\x12A\n" +
+	"\flast_used_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\n" +
+	"lastUsedAt\x12\x18\n" +
+	"\arevoked\x18\b \x01(\bR\arevoked\"\x8d\x01\n" +
+	" CreatePersonalAccessTokenRequest\x12 \n" +
+	"\x04name\x18\x01 \x01(\tB\f\xe0A\x02\xbaH\x06r\x04\x10\x01\x18dR\x04name\x12\x16\n" +
+	"\x06scopes\x18\x02 \x03(\tR\x06scopes\x12/\n" +
+	"\x0fexpires_in_days\x18\x03 \x01(\x05B\a\xbaH\x04\x1a\x02(\x00R\rexpiresInDays\"o\n" +
+	"!CreatePersonalAccessTokenResponse\x12\x14\n" +
+	"\x05token\x18\x01 \x01(\tR\x05token\x124\n" +
+	"\x04info\x18\x02 \x01(\v2 .auth.v1.PersonalAccessTokenInfoR\x04info\"!\n" +
+	"\x1fListPersonalAccessTokensRequest\"\\\n" +
+	" ListPersonalAccessTokensResponse\x128\n" +
+	"\x06tokens\x18\x01 \x03(\v2 .auth.v1.PersonalAccessTokenInfoR\x06tokens\"?\n" +
+	" RevokePersonalAccessTokenRequest\x12\x1b\n" +
+	"\x02id\x18\x01 \x01(\tB\v\xe0A\x02\xbaH\x05r\x03\xb0\x01\x01R\x02id\"#\n" +
+	"!RevokePersonalAccessTokenResponse2\xe6\a\n" +
 	"\vAuthService\x12`\n" +
 	"\n" +
 	"StartOAuth\x12\x1a.auth.v1.StartOAuthRequest\x1a\x1b.auth.v1.StartOAuthResponse\"\x19\x82\xd3\xe4\x93\x02\x13:\x01*\"\x0e/v1/auth/start\x12l\n" +
 	"\rOAuthCallback\x12\x1d.auth.v1.OAuthCallbackRequest\x1a\x1e.auth.v1.OAuthCallbackResponse\"\x1c\x82\xd3\xe4\x93\x02\x16:\x01*\"\x11/v1/auth/callback\x12q\n" +
 	"\rValidateToken\x12\x1d.auth.v1.ValidateTokenRequest\x1a\x1e.auth.v1.ValidateTokenResponse\"!\x82\xd3\xe4\x93\x02\x1b:\x01*\"\x16/v1/auth/validateToken\x12o\n" +
-	"\x0eGetCurrentUser\x12\x1e.auth.v1.GetCurrentUserRequest\x1a\x1f.auth.v1.GetCurrentUserResponse\"\x1c\x82\xd3\xe4\x93\x02\x16\x12\x14/v1/auth/currentUser2\xdb\x04\n" +
+	"\x0eGetCurrentUser\x12\x1e.auth.v1.GetCurrentUserRequest\x1a\x1f.auth.v1.GetCurrentUserResponse\"\x1c\x82\xd3\xe4\x93\x02\x16\x12\x14/v1/auth/currentUser\x12t\n" +
+	"\x0fIntrospectToken\x12\x1f.auth.v1.IntrospectTokenRequest\x1a .auth.v1.IntrospectTokenResponse\"\x1e\x82\xd3\xe4\x93\x02\x18:\x01*\"\x13/v1/auth/introspect\x12\x8e\x01\n" +
+	"\x19CreatePersonalAccessToken\x12).auth.v1.CreatePersonalAccessTokenRequest\x1a*.auth.v1.CreatePersonalAccessTokenResponse\"\x1a\x82\xd3\xe4\x93\x02\x14:\x01*\"\x0f/v1/auth/tokens\x12\x88\x01\n" +
+	"\x18ListPersonalAccessTokens\x12(.auth.v1.ListPersonalAccessTokensRequest\x1a).auth.v1.ListPersonalAccessTokensResponse\"\x17\x82\xd3\xe4\x93\x02\x11\x12\x0f/v1/auth/tokens\x12\x90\x01\n" +
+	"\x19RevokePersonalAccessToken\x12).auth.v1.RevokePersonalAccessTokenRequest\x1a*.auth.v1.RevokePersonalAccessTokenResponse\"\x1c\x82\xd3\xe4\x93\x02\x16*\x14/v1/auth/tokens/{id}2\xdb\x04\n" +
 	"\vUserService\x12B\n" +
 	"\x04List\x12\x14.auth.v1.ListRequest\x1a\x15.auth.v1.ListResponse\"\r\x82\xd3\xe4\x93\x02\a\x12\x05/user\x12N\n" +
 	"\x06Create\x12\x16.auth.v1.CreateRequest\x1a\x17.auth.v1.CreateResponse\"\x13\x82\xd3\xe4\x93\x02\r:\x04user\"\x05/user\x12D\n" +
@@ -1481,40 +2026,49 @@ func file_auth_v1_auth_proto_rawDescGZIP() []byte {
 	return file_auth_v1_auth_proto_rawDescData
 }
 
-var file_auth_v1_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 25)
+var file_auth_v1_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 34)
 var file_auth_v1_auth_proto_goTypes = []any{
-	(*User)(nil),                    // 0: auth.v1.User
-	(*Group)(nil),                   // 1: auth.v1.Group
-	(*UserList)(nil),                // 2: auth.v1.UserList
-	(*ListRequest)(nil),             // 3: auth.v1.ListRequest
-	(*ListResponse)(nil),            // 4: auth.v1.ListResponse
-	(*CreateRequest)(nil),           // 5: auth.v1.CreateRequest
-	(*CreateResponse)(nil),          // 6: auth.v1.CreateResponse
-	(*GetRequest)(nil),              // 7: auth.v1.GetRequest
-	(*GetResponse)(nil),             // 8: auth.v1.GetResponse
-	(*UpdateRequest)(nil),           // 9: auth.v1.UpdateRequest
-	(*UpdateResponse)(nil),          // 10: auth.v1.UpdateResponse
-	(*DeleteRequest)(nil),           // 11: auth.v1.DeleteRequest
-	(*DeleteResponse)(nil),          // 12: auth.v1.DeleteResponse
-	(*CountRequest)(nil),            // 13: auth.v1.CountRequest
-	(*CountResponse)(nil),           // 14: auth.v1.CountResponse
-	(*GetByExternalIdRequest)(nil),  // 15: auth.v1.GetByExternalIdRequest
-	(*GetByExternalIdResponse)(nil), // 16: auth.v1.GetByExternalIdResponse
-	(*StartOAuthRequest)(nil),       // 17: auth.v1.StartOAuthRequest
-	(*StartOAuthResponse)(nil),      // 18: auth.v1.StartOAuthResponse
-	(*OAuthCallbackRequest)(nil),    // 19: auth.v1.OAuthCallbackRequest
-	(*OAuthCallbackResponse)(nil),   // 20: auth.v1.OAuthCallbackResponse
-	(*ValidateTokenRequest)(nil),    // 21: auth.v1.ValidateTokenRequest
-	(*ValidateTokenResponse)(nil),   // 22: auth.v1.ValidateTokenResponse
-	(*GetCurrentUserRequest)(nil),   // 23: auth.v1.GetCurrentUserRequest
-	(*GetCurrentUserResponse)(nil),  // 24: auth.v1.GetCurrentUserResponse
-	(*timestamppb.Timestamp)(nil),   // 25: google.protobuf.Timestamp
+	(*User)(nil),                              // 0: auth.v1.User
+	(*Group)(nil),                             // 1: auth.v1.Group
+	(*UserList)(nil),                          // 2: auth.v1.UserList
+	(*ListRequest)(nil),                       // 3: auth.v1.ListRequest
+	(*ListResponse)(nil),                      // 4: auth.v1.ListResponse
+	(*CreateRequest)(nil),                     // 5: auth.v1.CreateRequest
+	(*CreateResponse)(nil),                    // 6: auth.v1.CreateResponse
+	(*GetRequest)(nil),                        // 7: auth.v1.GetRequest
+	(*GetResponse)(nil),                       // 8: auth.v1.GetResponse
+	(*UpdateRequest)(nil),                     // 9: auth.v1.UpdateRequest
+	(*UpdateResponse)(nil),                    // 10: auth.v1.UpdateResponse
+	(*DeleteRequest)(nil),                     // 11: auth.v1.DeleteRequest
+	(*DeleteResponse)(nil),                    // 12: auth.v1.DeleteResponse
+	(*CountRequest)(nil),                      // 13: auth.v1.CountRequest
+	(*CountResponse)(nil),                     // 14: auth.v1.CountResponse
+	(*GetByExternalIdRequest)(nil),            // 15: auth.v1.GetByExternalIdRequest
+	(*GetByExternalIdResponse)(nil),           // 16: auth.v1.GetByExternalIdResponse
+	(*StartOAuthRequest)(nil),                 // 17: auth.v1.StartOAuthRequest
+	(*StartOAuthResponse)(nil),                // 18: auth.v1.StartOAuthResponse
+	(*OAuthCallbackRequest)(nil),              // 19: auth.v1.OAuthCallbackRequest
+	(*OAuthCallbackResponse)(nil),             // 20: auth.v1.OAuthCallbackResponse
+	(*ValidateTokenRequest)(nil),              // 21: auth.v1.ValidateTokenRequest
+	(*ValidateTokenResponse)(nil),             // 22: auth.v1.ValidateTokenResponse
+	(*GetCurrentUserRequest)(nil),             // 23: auth.v1.GetCurrentUserRequest
+	(*GetCurrentUserResponse)(nil),            // 24: auth.v1.GetCurrentUserResponse
+	(*IntrospectTokenRequest)(nil),            // 25: auth.v1.IntrospectTokenRequest
+	(*IntrospectTokenResponse)(nil),           // 26: auth.v1.IntrospectTokenResponse
+	(*PersonalAccessTokenInfo)(nil),           // 27: auth.v1.PersonalAccessTokenInfo
+	(*CreatePersonalAccessTokenRequest)(nil),  // 28: auth.v1.CreatePersonalAccessTokenRequest
+	(*CreatePersonalAccessTokenResponse)(nil), // 29: auth.v1.CreatePersonalAccessTokenResponse
+	(*ListPersonalAccessTokensRequest)(nil),   // 30: auth.v1.ListPersonalAccessTokensRequest
+	(*ListPersonalAccessTokensResponse)(nil),  // 31: auth.v1.ListPersonalAccessTokensResponse
+	(*RevokePersonalAccessTokenRequest)(nil),  // 32: auth.v1.RevokePersonalAccessTokenRequest
+	(*RevokePersonalAccessTokenResponse)(nil), // 33: auth.v1.RevokePersonalAccessTokenResponse
+	(*timestamppb.Timestamp)(nil),             // 34: google.protobuf.Timestamp
 }
 var file_auth_v1_auth_proto_depIdxs = []int32{
-	25, // 0: auth.v1.User.created_at:type_name -> google.protobuf.Timestamp
-	25, // 1: auth.v1.User.last_login_at:type_name -> google.protobuf.Timestamp
-	25, // 2: auth.v1.UserList.created_at:type_name -> google.protobuf.Timestamp
-	25, // 3: auth.v1.UserList.last_login_at:type_name -> google.protobuf.Timestamp
+	34, // 0: auth.v1.User.created_at:type_name -> google.protobuf.Timestamp
+	34, // 1: auth.v1.User.last_login_at:type_name -> google.protobuf.Timestamp
+	34, // 2: auth.v1.UserList.created_at:type_name -> google.protobuf.Timestamp
+	34, // 3: auth.v1.UserList.last_login_at:type_name -> google.protobuf.Timestamp
 	2,  // 4: auth.v1.ListResponse.users:type_name -> auth.v1.UserList
 	0,  // 5: auth.v1.CreateRequest.user:type_name -> auth.v1.User
 	0,  // 6: auth.v1.CreateResponse.user:type_name -> auth.v1.User
@@ -1525,33 +2079,47 @@ var file_auth_v1_auth_proto_depIdxs = []int32{
 	0,  // 11: auth.v1.OAuthCallbackResponse.user:type_name -> auth.v1.User
 	0,  // 12: auth.v1.ValidateTokenResponse.user:type_name -> auth.v1.User
 	0,  // 13: auth.v1.GetCurrentUserResponse.user:type_name -> auth.v1.User
-	17, // 14: auth.v1.AuthService.StartOAuth:input_type -> auth.v1.StartOAuthRequest
-	19, // 15: auth.v1.AuthService.OAuthCallback:input_type -> auth.v1.OAuthCallbackRequest
-	21, // 16: auth.v1.AuthService.ValidateToken:input_type -> auth.v1.ValidateTokenRequest
-	23, // 17: auth.v1.AuthService.GetCurrentUser:input_type -> auth.v1.GetCurrentUserRequest
-	3,  // 18: auth.v1.UserService.List:input_type -> auth.v1.ListRequest
-	5,  // 19: auth.v1.UserService.Create:input_type -> auth.v1.CreateRequest
-	7,  // 20: auth.v1.UserService.Get:input_type -> auth.v1.GetRequest
-	9,  // 21: auth.v1.UserService.Update:input_type -> auth.v1.UpdateRequest
-	11, // 22: auth.v1.UserService.Delete:input_type -> auth.v1.DeleteRequest
-	13, // 23: auth.v1.UserService.Count:input_type -> auth.v1.CountRequest
-	15, // 24: auth.v1.UserService.GetByExternalId:input_type -> auth.v1.GetByExternalIdRequest
-	18, // 25: auth.v1.AuthService.StartOAuth:output_type -> auth.v1.StartOAuthResponse
-	20, // 26: auth.v1.AuthService.OAuthCallback:output_type -> auth.v1.OAuthCallbackResponse
-	22, // 27: auth.v1.AuthService.ValidateToken:output_type -> auth.v1.ValidateTokenResponse
-	24, // 28: auth.v1.AuthService.GetCurrentUser:output_type -> auth.v1.GetCurrentUserResponse
-	4,  // 29: auth.v1.UserService.List:output_type -> auth.v1.ListResponse
-	6,  // 30: auth.v1.UserService.Create:output_type -> auth.v1.CreateResponse
-	8,  // 31: auth.v1.UserService.Get:output_type -> auth.v1.GetResponse
-	10, // 32: auth.v1.UserService.Update:output_type -> auth.v1.UpdateResponse
-	12, // 33: auth.v1.UserService.Delete:output_type -> auth.v1.DeleteResponse
-	14, // 34: auth.v1.UserService.Count:output_type -> auth.v1.CountResponse
-	16, // 35: auth.v1.UserService.GetByExternalId:output_type -> auth.v1.GetByExternalIdResponse
-	25, // [25:36] is the sub-list for method output_type
-	14, // [14:25] is the sub-list for method input_type
-	14, // [14:14] is the sub-list for extension type_name
-	14, // [14:14] is the sub-list for extension extendee
-	0,  // [0:14] is the sub-list for field type_name
+	34, // 14: auth.v1.IntrospectTokenResponse.expires_at:type_name -> google.protobuf.Timestamp
+	34, // 15: auth.v1.PersonalAccessTokenInfo.created_at:type_name -> google.protobuf.Timestamp
+	34, // 16: auth.v1.PersonalAccessTokenInfo.expires_at:type_name -> google.protobuf.Timestamp
+	34, // 17: auth.v1.PersonalAccessTokenInfo.last_used_at:type_name -> google.protobuf.Timestamp
+	27, // 18: auth.v1.CreatePersonalAccessTokenResponse.info:type_name -> auth.v1.PersonalAccessTokenInfo
+	27, // 19: auth.v1.ListPersonalAccessTokensResponse.tokens:type_name -> auth.v1.PersonalAccessTokenInfo
+	17, // 20: auth.v1.AuthService.StartOAuth:input_type -> auth.v1.StartOAuthRequest
+	19, // 21: auth.v1.AuthService.OAuthCallback:input_type -> auth.v1.OAuthCallbackRequest
+	21, // 22: auth.v1.AuthService.ValidateToken:input_type -> auth.v1.ValidateTokenRequest
+	23, // 23: auth.v1.AuthService.GetCurrentUser:input_type -> auth.v1.GetCurrentUserRequest
+	25, // 24: auth.v1.AuthService.IntrospectToken:input_type -> auth.v1.IntrospectTokenRequest
+	28, // 25: auth.v1.AuthService.CreatePersonalAccessToken:input_type -> auth.v1.CreatePersonalAccessTokenRequest
+	30, // 26: auth.v1.AuthService.ListPersonalAccessTokens:input_type -> auth.v1.ListPersonalAccessTokensRequest
+	32, // 27: auth.v1.AuthService.RevokePersonalAccessToken:input_type -> auth.v1.RevokePersonalAccessTokenRequest
+	3,  // 28: auth.v1.UserService.List:input_type -> auth.v1.ListRequest
+	5,  // 29: auth.v1.UserService.Create:input_type -> auth.v1.CreateRequest
+	7,  // 30: auth.v1.UserService.Get:input_type -> auth.v1.GetRequest
+	9,  // 31: auth.v1.UserService.Update:input_type -> auth.v1.UpdateRequest
+	11, // 32: auth.v1.UserService.Delete:input_type -> auth.v1.DeleteRequest
+	13, // 33: auth.v1.UserService.Count:input_type -> auth.v1.CountRequest
+	15, // 34: auth.v1.UserService.GetByExternalId:input_type -> auth.v1.GetByExternalIdRequest
+	18, // 35: auth.v1.AuthService.StartOAuth:output_type -> auth.v1.StartOAuthResponse
+	20, // 36: auth.v1.AuthService.OAuthCallback:output_type -> auth.v1.OAuthCallbackResponse
+	22, // 37: auth.v1.AuthService.ValidateToken:output_type -> auth.v1.ValidateTokenResponse
+	24, // 38: auth.v1.AuthService.GetCurrentUser:output_type -> auth.v1.GetCurrentUserResponse
+	26, // 39: auth.v1.AuthService.IntrospectToken:output_type -> auth.v1.IntrospectTokenResponse
+	29, // 40: auth.v1.AuthService.CreatePersonalAccessToken:output_type -> auth.v1.CreatePersonalAccessTokenResponse
+	31, // 41: auth.v1.AuthService.ListPersonalAccessTokens:output_type -> auth.v1.ListPersonalAccessTokensResponse
+	33, // 42: auth.v1.AuthService.RevokePersonalAccessToken:output_type -> auth.v1.RevokePersonalAccessTokenResponse
+	4,  // 43: auth.v1.UserService.List:output_type -> auth.v1.ListResponse
+	6,  // 44: auth.v1.UserService.Create:output_type -> auth.v1.CreateResponse
+	8,  // 45: auth.v1.UserService.Get:output_type -> auth.v1.GetResponse
+	10, // 46: auth.v1.UserService.Update:output_type -> auth.v1.UpdateResponse
+	12, // 47: auth.v1.UserService.Delete:output_type -> auth.v1.DeleteResponse
+	14, // 48: auth.v1.UserService.Count:output_type -> auth.v1.CountResponse
+	16, // 49: auth.v1.UserService.GetByExternalId:output_type -> auth.v1.GetByExternalIdResponse
+	35, // [35:50] is the sub-list for method output_type
+	20, // [20:35] is the sub-list for method input_type
+	20, // [20:20] is the sub-list for extension type_name
+	20, // [20:20] is the sub-list for extension extendee
+	0,  // [0:20] is the sub-list for field type_name
 }
 
 func init() { file_auth_v1_auth_proto_init() }
@@ -1565,7 +2133,7 @@ func file_auth_v1_auth_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_auth_v1_auth_proto_rawDesc), len(file_auth_v1_auth_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   25,
+			NumMessages:   34,
 			NumExtensions: 0,
 			NumServices:   2,
 		},

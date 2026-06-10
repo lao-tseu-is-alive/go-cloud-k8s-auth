@@ -19,6 +19,8 @@ A modern **Proto-first** microservice for managing users and authentication — 
 ## ✨ Features
 
 - 🔐 **OAuth2 Social Login** — Google, GitHub, and Microsoft AD authentication
+- 🍪 **Browser SSO for module apps** — hosted login page, DB-backed session cookie, and a silent JWT mint endpoint so any module app (e.g. [go-mcp-markdown-notes](https://github.com/lao-tseu-is-alive/go-mcp-markdown-notes)) gets login with zero token copy-paste
+- 🎟️ **Personal Access Tokens (PAT)** — long-lived revocable `pat_...` tokens for programmatic clients (MCP servers, scripts), with a self-service management UI at `/tokens.html` and a public introspection endpoint
 - 👤 **User Management** — Auto-upsert profiles on login and standard CRUD support
 - 🔑 **JWT Signing & Verification** — Cryptographically signs and validates user session tokens
 - 🛡️ **Role-Based Access Control (RBAC)** — Simple role checks (admin, user) with group support
@@ -109,7 +111,25 @@ All endpoints are prefixed with `/goapi/v1` and require JWT authentication (exce
 | `POST` | `/goapi/v1/auth/start` | Initiates OAuth flow (Google, GitHub, Microsoft) | **Public** |
 | `POST` | `/goapi/v1/auth/callback` | Exhanges authorization code for signed JWT | **Public** |
 | `POST` | `/goapi/v1/auth/validateToken` | Verifies a JWT token's validity | **Public** |
+| `POST` | `/goapi/v1/auth/introspect` | Verifies a `pat_...` personal access token, returns identity + scopes | **Public** (the PAT is the credential) |
 | `GET` | `/goapi/v1/auth/currentUser` | Returns details of the currently logged-in user | **Secured** |
+| `POST` | `/goapi/v1/auth/tokens` | Create a personal access token (value returned **once**) | **Secured** |
+| `GET` | `/goapi/v1/auth/tokens` | List the current user's PATs (metadata only) | **Secured** |
+| `DELETE` | `/goapi/v1/auth/tokens/{id}` | Revoke one of the current user's PATs | **Secured** |
+
+### Browser SSO Endpoints (plain Echo, cookie-based)
+
+These endpoints implement the cross-module SSO flow. Anything involving the
+session cookie or a browser redirect lives here (not in Connect RPC).
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/auth/login?redirect_uri=...` | Hosted login page (provider buttons). Redirects straight back if a valid session cookie exists. The `redirect_uri` must match the `ALLOWED_REDIRECT_URIS` allowlist. |
+| `GET` | `/auth/oauth/{provider}/start?redirect_uri=...` | Starts the OAuth dance (302 to the provider consent page) |
+| `GET` | `/auth/oauth/{provider}/callback` | Provider callback: creates the DB-backed session, sets the `goSession` HttpOnly cookie, 302 back to the module |
+| `GET` | `/auth/token` | **Silent token mint**: exchanges the session cookie for a fresh short-lived JWT (`{token, expires_in_seconds, user}`). Returns 401 when no valid session. Callable cross-origin with `credentials: 'include'` from `ALLOWED_ORIGINS`. |
+| `POST` | `/auth/logout` | Revokes the session and clears the cookie |
+| `GET` | `/tokens.html` | Self-service PAT management UI (create / list / revoke) |
 
 ### User Resources (UserService)
 
@@ -132,6 +152,37 @@ curl -X POST http://localhost:9090/auth.v1.UserService/List \
   -H "Authorization: Bearer $TOKEN" \
   -d '{"limit": 10}'
 ```
+
+---
+
+## 🍪 Browser SSO: how module apps log users in
+
+The copy-paste-a-JWT era is over. A module app (running on the same parent
+domain in production, or another `localhost` port in dev — cookies are **not**
+port-scoped) integrates like this:
+
+```
+Browser                    module app (:8080)              auth service (:9090)
+   │  no token? ───────────────► GET /auth/token (cookie) ──► 401
+   │  window.location = :9090/auth/login?redirect_uri=http://localhost:8080/
+   │  ── pick Google/GitHub ──► OAuth dance ──► Set-Cookie: goSession ──► 302 back
+   │  GET /auth/token (cookie, credentials:'include') ──► { token, expires_in_seconds, user }
+   │  use JWT in memory, re-mint silently at ~80% of its lifetime
+```
+
+A new module needs only three things:
+1. Verify JWTs with the shared `JWT_SECRET` (same as today).
+2. Be listed in `ALLOWED_ORIGINS` (CORS w/ credentials) and `ALLOWED_REDIRECT_URIS`.
+3. ~20 lines of frontend: redirect to `/auth/login` when `/auth/token` returns 401,
+   otherwise keep the minted JWT in memory only.
+
+Sessions are stored in `go_auth.sessions` (opaque cookie value, SHA-256 hash in
+DB) so logout and admin revocation work instantly. Personal access tokens
+(`go_auth.personal_access_tokens`) cover non-browser clients; downstream
+services verify them via `POST /goapi/v1/auth/introspect`.
+
+> 📋 Setting this up end-to-end (OAuth consoles, env vars, first login) is
+> described step by step in [documentation/sso_setup_checklist.md](./documentation/sso_setup_checklist.md).
 
 ---
 
@@ -158,7 +209,13 @@ Adapt the variables to your setup. For OAuth2 providers, here is how to register
 #### GitHub OAuth Setup
 1. Go to **Settings > Developer Settings > OAuth Apps > New OAuth App** on GitHub.
 2. Set **Homepage URL** to `http://localhost:9090`.
-3. Set **Authorization callback URL** to `http://localhost:9090/` (since our frontend SPA handles the redirection parameters).
+3. Set the **Authorization callback URL(s)**. Two flows exist, each with its own callback:
+   - **Browser SSO flow** (recommended, used by module apps): `http://localhost:9090/auth/oauth/github/callback`
+   - Legacy SPA flow (this service's own demo page): `http://localhost:9090/`
+
+   GitHub OAuth Apps accept a single callback URL: prefer the SSO one (or create
+   one OAuth App per flow). Google and Microsoft accept multiple redirect URIs,
+   so register both there (`/auth/oauth/google/callback`, `/auth/oauth/microsoft/callback`).
 4. Register the app, generate a Client Secret, and configure `.env`:
    ```env
    # Google
@@ -176,6 +233,21 @@ Adapt the variables to your setup. For OAuth2 providers, here is how to register
    OAUTH_MICROSOFT_CLIENT_SECRET="your_microsoft_client_secret"
    OAUTH_MICROSOFT_REDIRECT_URL="http://localhost:9090/"
    ```
+   *Note:* `OAUTH_*_REDIRECT_URL` only configures the legacy SPA flow; the
+   browser SSO flow always derives its callback from `AUTH_PUBLIC_BASE_URL`
+   (`<AUTH_PUBLIC_BASE_URL>/auth/oauth/<provider>/callback`).
+
+#### Browser SSO variables
+
+| Variable | Dev default | Purpose |
+|----------|-------------|---------|
+| `AUTH_PUBLIC_BASE_URL` | `http://localhost:9090` | Externally reachable base URL, used to build the OAuth callback URLs |
+| `SESSION_COOKIE_NAME` | `goSession` | Name of the HttpOnly session cookie |
+| `COOKIE_DOMAIN` | *(empty = host-only)* | Cookie `Domain` attribute; set the parent domain (e.g. `.example.com`) in production |
+| `COOKIE_SECURE` | `false` | Set `true` behind https |
+| `SESSION_DURATION` | `720h` | Browser session lifetime (Go duration) |
+| `ALLOWED_REDIRECT_URIS` | `http://localhost:8080` | Comma-separated URL prefixes allowed as `redirect_uri` |
+| `ALLOWED_ORIGINS` | `https://golux.lausanne.ch,http://localhost:3000,http://localhost:8080` | CORS origins allowed to call `/auth/token` with credentials |
 
 ---
 
@@ -337,14 +409,6 @@ Queries the user service (requires admin rights or appropriate JWT token roles):
 
 ### 🧪 Run Automated Tests
 
-To execute tests:
-
-# Start the server
-go run ./cmd/goCloudAuthServer
-```
-
-### Run Tests
-
 ```bash
 make test
 ```
@@ -373,6 +437,7 @@ Find all available versions in the [Packages section](https://github.com/lao-tse
 
 - 📋 [Requirements](./documentation/Requirements.md) — Functional and system requirements
 - 🔐 [OAuth2 Providers Setup](./documentation/oauth_providers_setup.md) — Detailed guide to configure Google, GitHub, and Microsoft credentials
+- 🍪 [SSO Setup Checklist](./documentation/sso_setup_checklist.md) — **Step-by-step manual actions** to bring the browser SSO + PAT + MCP chain online
 - 🔗 [OpenAPI Spec (YAML)](./api/openapi/go_cloud_auth.yaml) — Generated from proto
 
 ---
@@ -411,6 +476,11 @@ go-cloud-k8s-auth/
 │   │   ├── user_service.go      # User CRUD business logic
 │   │   ├── auth_connect_server.go # ConnectRPC auth handlers
 │   │   ├── user_connect_server.go # ConnectRPC user handlers
+│   │   ├── browser_handlers.go  # Browser SSO: /auth/login, OAuth callbacks, /auth/token, /auth/logout
+│   │   ├── session_store.go     # DB-backed browser sessions (go_auth.sessions)
+│   │   ├── pat_service.go       # Personal Access Tokens: generation, introspection
+│   │   ├── pat_store.go         # PAT persistence (go_auth.personal_access_tokens)
+│   │   ├── pat_connect_server.go # ConnectRPC PAT handlers (introspect + CRUD)
 │   │   ├── storage.go           # Storage interfaces
 │   │   ├── storage_postgres.go  # PostgreSQL operations (pgx)
 │   │   ├── auth_interceptor.go  # JWT validation interceptor

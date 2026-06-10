@@ -27,6 +27,8 @@ var publicProcedures = map[string]bool{
 	authv1connect.AuthServiceStartOAuthProcedure:    true,
 	authv1connect.AuthServiceOAuthCallbackProcedure: true,
 	authv1connect.AuthServiceValidateTokenProcedure: true,
+	// IntrospectToken is public: the PAT in the request body is the credential.
+	authv1connect.AuthServiceIntrospectTokenProcedure: true,
 }
 
 // NewAuthInterceptor creates a Connect unary interceptor that validates JWT tokens

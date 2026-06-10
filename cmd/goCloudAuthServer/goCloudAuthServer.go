@@ -49,6 +49,11 @@ const (
 	defaultAdminUser           = "goadmin"
 	defaultAdminEmail          = "goadmin@yourdomain.org"
 	defaultAdminId             = 960901
+	defaultPublicBaseURL       = "http://localhost:9090"
+	defaultSessionCookieName   = "goSession"
+	defaultSessionDuration     = "720h" // 30 days
+	defaultAllowedRedirects    = "http://localhost:8080"
+	defaultAllowedOrigins      = "https://golux.lausanne.ch,http://localhost:3000,http://localhost:8080"
 	charsetUTF8                = "charset=UTF-8"
 	MIMEAppJSON                = "application/json"
 	MIMEHtml                   = "text/html"
@@ -166,6 +171,27 @@ func checkHealthy(string) bool {
 	//	return false
 	//}
 	return true
+}
+
+// getEnvString returns the environment variable value or the given default.
+func getEnvString(key, defaultValue string) string {
+	if val := os.Getenv(key); val != "" {
+		return val
+	}
+	return defaultValue
+}
+
+// getEnvList returns a comma-separated environment variable as a trimmed slice.
+func getEnvList(key, defaultValue string) []string {
+	raw := getEnvString(key, defaultValue)
+	parts := strings.Split(raw, ",")
+	result := make([]string, 0, len(parts))
+	for _, p := range parts {
+		if trimmed := strings.TrimSpace(p); trimmed != "" {
+			result = append(result, trimmed)
+		}
+	}
+	return result
 }
 
 func initMetadataOrFail(db database.DB, l *slog.Logger) {
@@ -308,11 +334,13 @@ func main() {
 
 	e := server.GetEcho()
 	//e.Use(goHttpEcho.CookieToHeaderMiddleware(yourService.jwtCookieName, l))
+	allowedOrigins := getEnvList("ALLOWED_ORIGINS", defaultAllowedOrigins)
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins:     []string{"https://golux.lausanne.ch", "http://localhost:3000"},
+		AllowOrigins:     allowedOrigins,
 		AllowMethods:     []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete},
 		AllowCredentials: true,
 	}))
+	l.Info("CORS configured", "allowedOrigins", allowedOrigins)
 
 	// begin prometheus stuff to create a custom counter metric
 	customCounter := prometheus.NewCounter( // create new counter metric. This is replacement for `prometheus.Metric` struct
@@ -421,9 +449,49 @@ func main() {
 		l.Warn("⚠️ No OAuth providers configured. OAuth login flows will be unavailable.")
 	}
 
+	// Initialize the PAT storage and business service
+	patStore, err := auth.NewPgxPatStore(dbStorageCtx, db, l)
+	if err != nil {
+		l.Error("💥💥 error creating PAT storage", "error", err)
+		os.Exit(1)
+	}
+
 	// Create business services (transport-agnostic)
 	authBusinessService := auth.NewAuthBusinessService(authStore, myJwt, oauthConfigs, l)
 	userBusinessService := auth.NewUserBusinessService(authStore, l, 50)
+	patBusinessService := auth.NewPatBusinessService(patStore, authStore, l)
+
+	// ---------------------------------------------------------
+	// Browser SSO: session cookie + hosted login + silent token mint
+	// ---------------------------------------------------------
+	sessionStore, err := auth.NewPgxSessionStore(dbStorageCtx, db, l)
+	if err != nil {
+		l.Error("💥💥 error creating session storage", "error", err)
+		os.Exit(1)
+	}
+	sessionTTL, err := time.ParseDuration(getEnvString("SESSION_DURATION", defaultSessionDuration))
+	if err != nil {
+		l.Error("💥💥 invalid SESSION_DURATION", "error", err)
+		os.Exit(1)
+	}
+	browserCfg := auth.BrowserConfig{
+		PublicBaseURL:       getEnvString("AUTH_PUBLIC_BASE_URL", defaultPublicBaseURL),
+		CookieName:          getEnvString("SESSION_COOKIE_NAME", defaultSessionCookieName),
+		CookieDomain:        getEnvString("COOKIE_DOMAIN", ""),
+		CookieSecure:        getEnvString("COOKIE_SECURE", "false") == "true",
+		SessionTTL:          sessionTTL,
+		AllowedRedirectURIs: getEnvList("ALLOWED_REDIRECT_URIS", defaultAllowedRedirects),
+	}
+	browserHandlers, err := auth.NewBrowserHandlers(authBusinessService, sessionStore, browserCfg, l)
+	if err != nil {
+		l.Error("💥💥 error creating browser SSO handlers", "error", err)
+		os.Exit(1)
+	}
+	browserHandlers.RegisterRoutes(e)
+	l.Info("🔑 Browser SSO routes mounted",
+		"loginUrl", browserCfg.PublicBaseURL+"/auth/login",
+		"allowedRedirectURIs", browserCfg.AllowedRedirectURIs,
+		"sessionTTL", sessionTTL.String())
 
 	// ---------------------------------------------------------
 	// Connect + Vanguard: REST/gRPC/Connect transcoding
@@ -433,7 +501,7 @@ func main() {
 	interceptors := connect.WithInterceptors(authInterceptor)
 
 	// Create Connect servers
-	authConnectServer := auth.NewAuthConnectServer(authBusinessService, l)
+	authConnectServer := auth.NewAuthConnectServer(authBusinessService, patBusinessService, l)
 	userConnectServer := auth.NewUserConnectServer(userBusinessService, l)
 
 	// Create service handlers with auth interceptor

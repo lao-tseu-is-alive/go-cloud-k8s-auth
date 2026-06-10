@@ -14,6 +14,7 @@ import (
 // AuthConnectServer implements the AuthServiceHandler interface for ConnectRPC.
 type AuthConnectServer struct {
 	AuthService *AuthBusinessService
+	PatService  *PatBusinessService
 	Log         *slog.Logger
 
 	// Embed the unimplemented handler for forward compatibility
@@ -21,9 +22,10 @@ type AuthConnectServer struct {
 }
 
 // NewAuthConnectServer creates a new AuthConnectServer.
-func NewAuthConnectServer(authService *AuthBusinessService, log *slog.Logger) *AuthConnectServer {
+func NewAuthConnectServer(authService *AuthBusinessService, patService *PatBusinessService, log *slog.Logger) *AuthConnectServer {
 	return &AuthConnectServer{
 		AuthService: authService,
+		PatService:  patService,
 		Log:         log,
 	}
 }
