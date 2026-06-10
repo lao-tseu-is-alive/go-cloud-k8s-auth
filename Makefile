@@ -3,9 +3,9 @@ SHELL := /bin/bash
 # on Linux with rancher-desktop no need for docker
 DOCKER_BIN := nerdctl
 VER_SOURCE_CODE := pkg/version/version.go
-APP_NAME := $(shell grep -E 'APP\s+=' $(VER_SOURCE_CODE)| awk '{ print $$3 }'  | tr -d '"')
-APP_VERSION := $(shell grep -E 'VERSION\s+=' $(VER_SOURCE_CODE)| awk '{ print $$3 }'  | tr -d '"')
-APP_REPOSITORY := $(shell grep -E 'REPOSITORY\s+=' $(VER_SOURCE_CODE)| awk '{ print $$3 }'  | tr -d '"')
+APP_NAME := $(shell grep -E 'AppName\s+=' $(VER_SOURCE_CODE)| awk '{ print $$3 }'  | tr -d '"')
+APP_VERSION := $(shell grep -E 'Version\s+=' $(VER_SOURCE_CODE)| awk '{ print $$3 }'  | tr -d '"')
+APP_REPOSITORY := $(shell grep -E 'Repository\s+=' $(VER_SOURCE_CODE)| awk '{ print $$3 }'  | tr -d '"')
 $(info  Found APP_NAME:'$(APP_NAME)', APP_VERSION:'$(APP_VERSION)', APP_REPOSITORY:'$(APP_REPOSITORY)',  in file: $(VER_SOURCE_CODE) )
 ifneq ("$(wildcard .env)","")
 	ENV_EXISTS := "TRUE"
@@ -48,7 +48,7 @@ MAKEFLAGS += --silent
 # because it is the first target in this Makefile this is also the default rule
 .PHONY: run
 ## run:	will run a dev version of your Go application [DEFAULT RULE]
-run: check-env mod-download openapi-codegen
+run: check-env mod-download
 	go run $(LDFLAGS) cmd/$(APP_EXECUTABLE)/${APP_EXECUTABLE}.go
 
 .PHONY: mod-download
