@@ -141,6 +141,9 @@ func TestHandleLogin(t *testing.T) {
 		body := rec.Body.String()
 		assert.Contains(t, body, "/auth/oauth/github/start")
 		assert.Contains(t, body, "Continue with GitHub")
+		// redirect_uri must be URL-escaped exactly once in the provider links
+		assert.Contains(t, body, "redirect_uri=http%3a%2f%2flocalhost%3a8080%2f")
+		assert.NotContains(t, body, "%253a")
 	})
 
 	t.Run("redirects back immediately with a valid session", func(t *testing.T) {

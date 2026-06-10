@@ -212,9 +212,11 @@ func (h *BrowserHandlers) handleLogin(c echo.Context) error {
 	sort.Slice(providers, func(i, j int) bool { return providers[i].Name < providers[j].Name })
 
 	var sb strings.Builder
+	// html/template URL-escapes values in query contexts itself; escaping
+	// here too would double-encode the redirect_uri.
 	err := loginPageTemplate.Execute(&sb, map[string]any{
 		"Providers":   providers,
-		"RedirectURI": url.QueryEscape(redirectURI),
+		"RedirectURI": redirectURI,
 	})
 	if err != nil {
 		h.log.Error("login: template execution failed", "error", err)
