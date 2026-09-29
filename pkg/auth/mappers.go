@@ -2,11 +2,13 @@
 package auth
 
 import (
+	"slices"
+	"time"
+
 	"github.com/google/uuid"
 	authv1 "github.com/lao-tseu-is-alive/go-cloud-k8s-auth/gen/auth/v1"
 	"github.com/lao-tseu-is-alive/go-cloud-k8s-common-libs/pkg/goHttpEcho"
 	"google.golang.org/protobuf/types/known/timestamppb"
-	"time"
 )
 
 // =============================================================================
@@ -96,6 +98,7 @@ func DomainUserListToProto(u *UserList) *authv1.UserList {
 		Email:       u.Email,
 		Name:        u.Name,
 		Disabled:    !u.IsActive,
+		Roles:       u.Roles,
 		CreatedAt:   timeToTimestamp(u.CreatedAt),
 		LastLoginAt: timeToTimestamp(u.LastLoginAt),
 	}
@@ -125,13 +128,7 @@ func DomainUserToJwtUserInfo(u *User, groupIDs []int) *goHttpEcho.UserInfo {
 		return nil
 	}
 
-	isAdmin := false
-	for _, role := range u.Roles {
-		if role == "admin" {
-			isAdmin = true
-			break
-		}
-	}
+	isAdmin := slices.Contains(u.Roles, AdminRole)
 
 	return &goHttpEcho.UserInfo{
 		UserId:     int(u.AlternateAppID),

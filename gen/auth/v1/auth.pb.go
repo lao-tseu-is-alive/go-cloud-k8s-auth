@@ -217,14 +217,16 @@ func (x *Group) GetIsPersonal() bool {
 
 // A light version of User for lists
 type UserList struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	ExternalId    int64                  `protobuf:"varint,2,opt,name=external_id,json=externalId,proto3" json:"external_id,omitempty"`
-	Email         string                 `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
-	Name          string                 `protobuf:"bytes,4,opt,name=name,proto3" json:"name,omitempty"`
-	Disabled      bool                   `protobuf:"varint,5,opt,name=disabled,proto3" json:"disabled,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	LastLoginAt   *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=last_login_at,json=lastLoginAt,proto3" json:"last_login_at,omitempty"`
+	state       protoimpl.MessageState `protogen:"open.v1"`
+	Id          string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	ExternalId  int64                  `protobuf:"varint,2,opt,name=external_id,json=externalId,proto3" json:"external_id,omitempty"`
+	Email       string                 `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
+	Name        string                 `protobuf:"bytes,4,opt,name=name,proto3" json:"name,omitempty"`
+	Disabled    bool                   `protobuf:"varint,5,opt,name=disabled,proto3" json:"disabled,omitempty"`
+	CreatedAt   *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	LastLoginAt *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=last_login_at,json=lastLoginAt,proto3" json:"last_login_at,omitempty"`
+	// roles held by the user (e.g. "user", "admin"); "admin" sets is_admin in the JWT
+	Roles         []string `protobuf:"bytes,8,rep,name=roles,proto3" json:"roles,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -304,6 +306,13 @@ func (x *UserList) GetCreatedAt() *timestamppb.Timestamp {
 func (x *UserList) GetLastLoginAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.LastLoginAt
+	}
+	return nil
+}
+
+func (x *UserList) GetRoles() []string {
+	if x != nil {
+		return x.Roles
 	}
 	return nil
 }
@@ -1890,7 +1899,7 @@ const file_auth_v1_auth_proto_rawDesc = "" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x19\n" +
 	"\bowner_id\x18\x03 \x01(\tR\aownerId\x12\x1f\n" +
 	"\vis_personal\x18\x04 \x01(\bR\n" +
-	"isPersonal\"\x9a\x02\n" +
+	"isPersonal\"\xb0\x02\n" +
 	"\bUserList\x12\x13\n" +
 	"\x02id\x18\x01 \x01(\tB\x03\xe0A\x02R\x02id\x12\x1f\n" +
 	"\vexternal_id\x18\x02 \x01(\x03R\n" +
@@ -1900,7 +1909,8 @@ const file_auth_v1_auth_proto_rawDesc = "" +
 	"\bdisabled\x18\x05 \x01(\bB\x03\xe0A\x02R\bdisabled\x12>\n" +
 	"\n" +
 	"created_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\tcreatedAt\x12C\n" +
-	"\rlast_login_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\vlastLoginAt\"W\n" +
+	"\rlast_login_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampB\x03\xe0A\x03R\vlastLoginAt\x12\x14\n" +
+	"\x05roles\x18\b \x03(\tR\x05roles\"W\n" +
 	"\vListRequest\x12\x14\n" +
 	"\x05limit\x18\x01 \x01(\x05R\x05limit\x12\x16\n" +
 	"\x06offset\x18\x02 \x01(\x05R\x06offset\x12\x1a\n" +

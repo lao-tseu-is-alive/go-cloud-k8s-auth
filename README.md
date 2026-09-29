@@ -249,6 +249,26 @@ Adapt the variables to your setup. For OAuth2 providers, here is how to register
 | `ALLOWED_REDIRECT_URIS` | `http://localhost:8080` | Comma-separated URL prefixes allowed as `redirect_uri` |
 | `ALLOWED_ORIGINS` | `https://golux.lausanne.ch,http://localhost:3000,http://localhost:8080` | CORS origins allowed to call `/auth/token` with credentials |
 
+#### Administrators
+
+A user is an administrator when their `roles` contain `admin`; the JWT then carries
+`is_admin: true` (module apps such as Goéland map it to their own admin scope). Only an
+administrator can change roles, so the first ones come from configuration:
+
+| Variable | Dev default | Purpose |
+|----------|-------------|---------|
+| `BOOTSTRAP_ADMIN_EMAILS` | *(empty)* | Comma-separated e-mails (case-insensitive) granted the `admin` role at their next OAuth login. It only grants: removing an e-mail never revokes the role. |
+
+On the test page, **Se connecter (SSO)** goes through `/auth/login` and the page then mints
+its JWT from the session cookie (`/auth/token`); **Déconnexion** also revokes the session.
+
+The e-mail is the one the OAuth provider returns, so list only addresses whose ownership the
+provider verifies (e.g. your Google account). Afterwards, administrators grant or revoke the
+role from the **Administration des Utilisateurs** section of the test page on
+`http://localhost:9090/` (or `PUT /goapi/v1/user/{id}`); an administrator cannot remove their
+own admin role. A role change applies to the next token issued (a page reload in a module app
+using the SSO cookie mints a new one).
+
 ---
 
 ### 🚀 Step 2: Start the Server
@@ -345,7 +365,16 @@ curl -H "Authorization: Bearer $JWT_TOKEN" \
   http://localhost:9090/goapi/v1/user
 ```
 
-#### 4. Create User (Admin required or user creation)
+#### 4. Grant the admin role (Admin required)
+```bash
+# read the full user, add "admin" to roles, write it back (Update replaces the user)
+curl -H "Authorization: Bearer $JWT_TOKEN" http://localhost:9090/goapi/v1/user/<user-uuid>
+curl -X PUT http://localhost:9090/goapi/v1/user/<user-uuid> \
+  -H "Authorization: Bearer $JWT_TOKEN" -H "Content-Type: application/json" \
+  -d '{"id": "<user-uuid>", "email": "<email>", "name": "<name>", "roles": ["user", "admin"]}'
+```
+
+#### 5. Create User (Admin required or user creation)
 ```bash
 curl -X POST http://localhost:9090/goapi/v1/user \
   -H "Authorization: Bearer $JWT_TOKEN" \

@@ -283,6 +283,35 @@
             font-size: 0.85rem;
             color: var(--text-muted);
         }
+
+        /* Administration des utilisateurs */
+        .users-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+        .users-table th,
+        .users-table td {
+            text-align: left;
+            padding: 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .users-table th {
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+        .users-table td.center,
+        .users-table th.center {
+            text-align: center;
+        }
+        .users-table input[type="checkbox"] {
+            width: 1.1rem;
+            height: 1.1rem;
+            cursor: pointer;
+        }
+        .users-table input[type="checkbox"]:disabled {
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
@@ -328,6 +357,16 @@
             <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">
                 Sélectionnez un fournisseur pour initier le flux de connexion. Assurez-vous d'avoir configuré les variables d'environnement correspondantes dans le fichier <code>.env</code>.
             </p>
+            <div class="btn-group" style="margin-bottom: 1rem;">
+                <button id="btn-auth-sso" class="btn-action">
+                    🔑 Se connecter (SSO)
+                </button>
+            </div>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+                Recommandé : passe par la page de connexion du serveur (cookie de session, comme les applications modules),
+                puis le jeton est obtenu automatiquement via <code>/auth/token</code>. Les boutons ci-dessous testent le flux
+                OAuth2 « manuel » et exigent que l'URL de retour du fournisseur soit cette page.
+            </p>
             <div class="btn-group">
                 <button id="btn-auth-github" class="btn-github">
                     🐱 GitHub
@@ -360,6 +399,34 @@
                     📋 Lister les Utilisateurs
                 </button>
             </div>
+        </div>
+
+        <!-- SECTION 4 : ADMINISTRATION DES UTILISATEURS (administrateurs uniquement) -->
+        <div class="section" id="section-admin-users" style="display: none;">
+            <div class="section-title">
+                <span>Administration des Utilisateurs</span>
+                <button id="btn-admin-refresh" class="btn-secondary" style="padding: 0.3rem 0.8rem; font-size: 0.8rem;">
+                    🔄 Actualiser
+                </button>
+            </div>
+            <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">
+                Cochez « Admin » pour donner le rôle <code>admin</code> (drapeau <code>is_admin</code> du JWT, qui devient
+                <code>goeland:admin</code> dans Goéland). Le changement s'applique au prochain jeton émis. Vous ne pouvez pas
+                retirer votre propre rôle d'administrateur.
+            </p>
+            <table class="users-table">
+                <thead>
+                    <tr>
+                        <th scope="col">Nom</th>
+                        <th scope="col">E-mail</th>
+                        <th scope="col">Rôles</th>
+                        <th scope="col">Dernière connexion</th>
+                        <th scope="col" class="center">Actif</th>
+                        <th scope="col" class="center">Admin</th>
+                    </tr>
+                </thead>
+                <tbody id="admin-users-body"></tbody>
+            </table>
         </div>
 
         <!-- ZONE DE FEEDBACK EN FRANÇAIS -->
@@ -446,11 +513,13 @@
                     const payload = JSON.parse(atob(token.split('.')[1]));
                     log("Décodage local du JWT réussi", payload);
                     
-                    userDisplayName.textContent = payload.user?.name || "Utilisateur";
-                    userDisplayEmail.textContent = payload.user?.email || "-";
-                    userRoles.textContent = `Rôles: ${(payload.user?.roles || []).join(', ')}`;
-                    userProvider.textContent = `Via: ${payload.user?.provider || 'JWT'}`;
-                    userAvatar.src = payload.user?.avatar_url || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
+                    // The claim is serialized as "User" (goHttpEcho.JwtCustomClaims has no json tag).
+                    const claimUser = payload.User || payload.user || {};
+                    userDisplayName.textContent = claimUser.name || "Utilisateur";
+                    userDisplayEmail.textContent = claimUser.email || "-";
+                    userRoles.textContent = claimUser.is_admin ? "Administrateur" : "Utilisateur";
+                    userProvider.textContent = `Via: ${claimUser.provider || 'JWT'}`;
+                    userAvatar.src = claimUser.avatar_url || "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y";
                 } catch (e) {
                     log("Impossible de décoder localement les détails du JWT :", e);
                 }
@@ -462,10 +531,13 @@
             }
         }
 
-        btnLogout.addEventListener("click", () => {
+        btnLogout.addEventListener("click", async () => {
+            // Revoke the SSO session too, otherwise the next load would mint a new token from the cookie.
+            await fetch("/auth/logout", { method: "POST", credentials: "same-origin" }).catch(() => {});
             localStorage.removeItem(JWT_KEY);
             localStorage.removeItem(PROVIDER_KEY);
             log("Déconnexion de l'utilisateur. Suppression du JWT local.");
+            adminSection.style.display = "none";
             showFeedback("Vous avez été déconnecté avec succès.", "success");
             updateUIState();
         });
@@ -507,6 +579,28 @@
             } catch (err) {
                 log("Erreur lors de l'initialisation du flux OAuth2", err.message);
                 showFeedback(`Échec de l'authentification : ${err.message}`, "error");
+            }
+        }
+
+        // --- CONNEXION SSO (cookie de session) ---
+        document.getElementById("btn-auth-sso").addEventListener("click", () => {
+            window.location.href = `/auth/login?redirect_uri=${encodeURIComponent("/")}`;
+        });
+
+        // Without a local JWT, mint one from the SSO session cookie (same origin).
+        async function mintFromSession() {
+            if (getJWT()) return;
+            try {
+                const response = await fetch("/auth/token", { credentials: "same-origin" });
+                if (!response.ok) return; // no session: stay signed out
+                const data = await response.json();
+                if (data.token) {
+                    localStorage.setItem(JWT_KEY, data.token);
+                    log(`Jeton obtenu depuis la session SSO (valide ${Math.round((data.expires_in_seconds || 0) / 60)} min)`);
+                    updateUIState();
+                }
+            } catch (err) {
+                log("Impossible d'obtenir un jeton depuis la session SSO", err.message);
             }
         }
 
@@ -635,10 +729,110 @@
             callSecureAPI("/goapi/v1/user");
         });
 
+        // --- ADMINISTRATION DES UTILISATEURS ---
+        const ADMIN_ROLE = "admin";
+        const adminSection = document.getElementById("section-admin-users");
+        const adminUsersBody = document.getElementById("admin-users-body");
+        const btnAdminRefresh = document.getElementById("btn-admin-refresh");
+        let currentUserId = null;
+
+        // Appel JSON authentifié ; lève une erreur avec le message du serveur.
+        async function apiJSON(endpoint, method = "GET", body = null) {
+            const headers = { "Authorization": `Bearer ${getJWT()}` };
+            if (body) {
+                headers["Content-Type"] = "application/json";
+            }
+            const response = await fetch(endpoint, { method, headers, body: body ? JSON.stringify(body) : null });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) {
+                throw new Error(data.message || `Erreur HTTP ${response.status}`);
+            }
+            return data;
+        }
+
+        // Affiche la section si l'utilisateur courant a le rôle admin.
+        async function loadAdminPanel() {
+            adminSection.style.display = "none";
+            if (!getJWT()) return;
+            try {
+                const me = (await apiJSON("/goapi/v1/auth/currentUser")).user;
+                if (!me || !(me.roles || []).includes(ADMIN_ROLE)) return;
+                currentUserId = me.id;
+                adminSection.style.display = "block";
+                await loadUsers();
+            } catch (err) {
+                log("Chargement du panneau d'administration impossible", err.message);
+            }
+        }
+
+        async function loadUsers() {
+            const data = await apiJSON("/goapi/v1/user?limit=200");
+            adminUsersBody.replaceChildren(...(data.users || []).map(userRow));
+        }
+
+        function cell(text, className = "") {
+            const td = document.createElement("td");
+            td.textContent = text;
+            if (className) td.className = className;
+            return td;
+        }
+
+        // Les valeurs viennent de la base : textContent uniquement, jamais innerHTML.
+        function userRow(user) {
+            const tr = document.createElement("tr");
+            const roles = user.roles || [];
+            const lastLogin = user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString() : "—";
+            tr.append(
+                cell(user.name || "—"),
+                cell(user.email || "—"),
+                cell(roles.join(", ") || "—"),
+                cell(lastLogin),
+                cell(user.disabled ? "Non" : "Oui", "center"),
+            );
+            const adminCell = cell("", "center");
+            const box = document.createElement("input");
+            box.type = "checkbox";
+            box.checked = roles.includes(ADMIN_ROLE);
+            box.setAttribute("aria-label", `Administrateur : ${user.email}`);
+            if (user.id === currentUserId) {
+                box.disabled = true;
+                box.title = "Vous ne pouvez pas retirer votre propre rôle d'administrateur";
+            }
+            box.addEventListener("change", () => setAdmin(user, box));
+            adminCell.append(box);
+            tr.append(adminCell);
+            return tr;
+        }
+
+        // Relit l'utilisateur complet, ajoute ou retire le rôle admin, puis enregistre.
+        async function setAdmin(listed, box) {
+            const grant = box.checked;
+            box.disabled = true;
+            try {
+                const endpoint = `/goapi/v1/user/${encodeURIComponent(listed.id)}`;
+                const user = (await apiJSON(endpoint)).user;
+                const others = (user.roles || []).filter(r => r !== ADMIN_ROLE);
+                user.roles = grant ? [...others, ADMIN_ROLE] : (others.length > 0 ? others : ["user"]);
+                await apiJSON(endpoint, "PUT", user);
+                log(`Rôle admin ${grant ? "accordé à" : "retiré de"} ${user.email}`);
+                showFeedback(`Rôle admin ${grant ? "accordé à" : "retiré de"} ${user.email}.`, "success");
+                await loadUsers();
+            } catch (err) {
+                box.checked = !grant;
+                box.disabled = false;
+                log("Modification du rôle admin refusée", err.message);
+                showFeedback(`Échec : ${err.message}`, "error");
+            }
+        }
+
+        btnAdminRefresh.addEventListener("click", () => loadUsers().catch(err => showFeedback(`Échec : ${err.message}`, "error")));
+
         // --- INITIALISATION ---
-        window.addEventListener("DOMContentLoaded", () => {
+        window.addEventListener("DOMContentLoaded", async () => {
             updateUIState();
-            handleOAuthCallback();
+            await handleOAuthCallback();
+            await mintFromSession();
+            await loadAdminPanel();
         });
     </script>
 </body>

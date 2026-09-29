@@ -4,7 +4,17 @@ info:
   version: version not set
 tags:
   - name: AuthService
+    description: |-
+      =========================================================
+      Service: Auth
+      Description: API to authenticate User
+      =========================================================
   - name: UserService
+    description: |-
+      =========================================================
+      Service: User
+      Description: API to manage User
+      =========================================================
 consumes:
   - application/json
 produces:
@@ -600,6 +610,11 @@ definitions:
         type: string
         format: date-time
         readOnly: true
+      roles:
+        type: array
+        items:
+          type: string
+        title: roles held by the user (e.g. "user", "admin"); "admin" sets is_admin in the JWT
     title: A light version of User for lists
     required:
       - id

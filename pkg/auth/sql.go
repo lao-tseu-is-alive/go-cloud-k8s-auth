@@ -55,7 +55,7 @@ WHERE alternate_app_id = $1;
 `
 
 	listUsers = `
-SELECT id, alternate_app_id, email, name, is_active, created_at, last_login_at
+SELECT id, alternate_app_id, email, name, roles, is_active, created_at, last_login_at
 FROM go_auth.users
 WHERE ($3::boolean IS NULL OR is_active = $3)
 ORDER BY created_at DESC
@@ -76,6 +76,14 @@ UPDATE go_auth.users SET
     roles = $5,
     is_active = $6
 WHERE id = $1
+RETURNING id, alternate_app_id, email, name, avatar_url, provider, provider_id, roles, is_active, created_at, last_login_at;
+`
+
+	// Adds a role only when the user does not hold it yet; no row is returned
+	// when the role was already present.
+	addUserRole = `
+UPDATE go_auth.users SET roles = array_append(roles, $2::text)
+WHERE id = $1 AND NOT ($2::text = ANY(roles))
 RETURNING id, alternate_app_id, email, name, avatar_url, provider, provider_id, roles, is_active, created_at, last_login_at;
 `
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"strings"
 
 	"github.com/lao-tseu-is-alive/go-cloud-k8s-common-libs/pkg/goHttpEcho"
 	"golang.org/x/oauth2"
@@ -16,6 +17,44 @@ type AuthBusinessService struct {
 	OAuthConfigs map[string]*oauth2.Config // keyed by provider name: "google", "github", "microsoft"
 	StateStore   *StateStore
 	Log          *slog.Logger
+	// BootstrapAdminEmails lists the lower-cased e-mails granted the "admin"
+	// role on OAuth login (see ParseAdminEmails). It only grants: removing an
+	// e-mail from the list never revokes the role.
+	BootstrapAdminEmails map[string]struct{}
+}
+
+// AdminRole is the role that makes a user an administrator (is_admin in the JWT).
+const AdminRole = "admin"
+
+// ParseAdminEmails parses a comma-separated e-mail list (the
+// BOOTSTRAP_ADMIN_EMAILS setting) into a lower-cased set; blank entries are
+// ignored.
+func ParseAdminEmails(raw string) map[string]struct{} {
+	emails := make(map[string]struct{})
+	for _, part := range strings.Split(raw, ",") {
+		if email := strings.ToLower(strings.TrimSpace(part)); email != "" {
+			emails[email] = struct{}{}
+		}
+	}
+	return emails
+}
+
+// ensureBootstrapAdmin grants the admin role to a user whose e-mail is listed
+// in BootstrapAdminEmails and who does not hold it yet, and returns the
+// (possibly updated) user.
+func (s *AuthBusinessService) ensureBootstrapAdmin(ctx context.Context, user *User) (*User, error) {
+	if _, listed := s.BootstrapAdminEmails[strings.ToLower(user.Email)]; !listed {
+		return user, nil
+	}
+	updated, err := s.Store.AddRole(ctx, user.ID, AdminRole)
+	if err != nil {
+		return nil, fmt.Errorf("failed to grant bootstrap admin role: %w", err)
+	}
+	if updated == nil {
+		return user, nil
+	}
+	s.Log.Info("granted admin role from BOOTSTRAP_ADMIN_EMAILS", "userId", user.ID)
+	return updated, nil
 }
 
 // NewAuthBusinessService creates a new AuthBusinessService.
@@ -147,7 +186,7 @@ func (s *AuthBusinessService) AuthenticateOAuthUser(ctx context.Context, provide
 	if !user.IsActive {
 		return nil, ErrUserDisabled
 	}
-	return user, nil
+	return s.ensureBootstrapAdmin(ctx, user)
 }
 
 // IssueJwtForUser generates a signed JWT for the given user, including group claims.

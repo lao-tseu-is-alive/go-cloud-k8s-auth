@@ -179,6 +179,8 @@ message UserList {
   bool disabled = 5 [(google.api.field_behavior) = REQUIRED];
   google.protobuf.Timestamp created_at = 6  [(google.api.field_behavior) = OUTPUT_ONLY];
   google.protobuf.Timestamp last_login_at = 7 [(google.api.field_behavior) = OUTPUT_ONLY];
+  // roles held by the user (e.g. "user", "admin"); "admin" sets is_admin in the JWT
+  repeated string roles = 8;
 }
 
 

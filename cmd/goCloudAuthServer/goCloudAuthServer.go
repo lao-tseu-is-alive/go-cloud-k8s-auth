@@ -458,6 +458,9 @@ func main() {
 
 	// Create business services (transport-agnostic)
 	authBusinessService := auth.NewAuthBusinessService(authStore, myJwt, oauthConfigs, l)
+	// First administrators: listed e-mails get the admin role on OAuth login.
+	authBusinessService.BootstrapAdminEmails = auth.ParseAdminEmails(os.Getenv("BOOTSTRAP_ADMIN_EMAILS"))
+	l.Info("bootstrap administrators configured", "count", len(authBusinessService.BootstrapAdminEmails))
 	userBusinessService := auth.NewUserBusinessService(authStore, l, 50)
 	patBusinessService := auth.NewPatBusinessService(patStore, authStore, l)
 

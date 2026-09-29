@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+	"slices"
 
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
@@ -165,6 +166,9 @@ func (s *UserConnectServer) Update(
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
+	if err := s.ensureNotSelfDemotion(ctx, id, domainUser.Roles); err != nil {
+		return nil, err
+	}
 
 	updated, err := s.UserService.Update(ctx, id, *domainUser)
 	if err != nil {
@@ -174,6 +178,24 @@ func (s *UserConnectServer) Update(
 	return connect.NewResponse(&authv1.UpdateResponse{
 		User: DomainUserToProto(updated),
 	}), nil
+}
+
+// ensureNotSelfDemotion refuses an update that would remove the caller's own
+// admin role, so an administrator cannot lock themself (and possibly everyone)
+// out of user management.
+func (s *UserConnectServer) ensureNotSelfDemotion(ctx context.Context, id uuid.UUID, roles []string) error {
+	if slices.Contains(roles, AdminRole) {
+		return nil
+	}
+	callerID, _ := GetUserFromContext(ctx)
+	target, err := s.UserService.Get(ctx, id)
+	if err != nil {
+		return s.mapErrorToConnect(err)
+	}
+	if target.AlternateAppID == int64(callerID) && slices.Contains(target.Roles, AdminRole) {
+		return connect.NewError(connect.CodeFailedPrecondition, errors.New("you cannot remove your own admin role"))
+	}
+	return nil
 }
 
 // Delete deletes a user.

@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"net/http"
 	"net/url"
+	"slices"
 	"sort"
 	"strings"
 	"time"
@@ -342,13 +343,7 @@ func (h *BrowserHandlers) handleToken(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "internal error"})
 	}
 
-	isAdmin := false
-	for _, role := range user.Roles {
-		if role == "admin" {
-			isAdmin = true
-			break
-		}
-	}
+	isAdmin := slices.Contains(user.Roles, AdminRole)
 	return c.JSON(http.StatusOK, tokenResponse{
 		Token:            token,
 		ExpiresInSeconds: h.service.JwtCheck.GetJwtDuration() * 60,

@@ -28,6 +28,7 @@ type UserList struct {
 	AlternateAppID int64      `json:"alternate_app_id" db:"alternate_app_id"`
 	Email          string     `json:"email" db:"email"`
 	Name           string     `json:"name" db:"name"`
+	Roles          []string   `json:"roles" db:"roles"`
 	IsActive       bool       `json:"is_active" db:"is_active"`
 	CreatedAt      *time.Time `json:"created_at" db:"created_at"`
 	LastLoginAt    *time.Time `json:"last_login_at" db:"last_login_at"`

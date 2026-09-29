@@ -28,6 +28,11 @@ type UserStorage interface {
 	// Update updates the user with given UUID in the storage.
 	Update(ctx context.Context, id uuid.UUID, u User) (*User, error)
 
+	// AddRole grants role to the user with given UUID when the user does not
+	// hold it yet. It returns the updated user, or (nil, nil) when the role was
+	// already present.
+	AddRole(ctx context.Context, id uuid.UUID, role string) (*User, error)
+
 	// Delete removes the user with given UUID from the storage.
 	Delete(ctx context.Context, id uuid.UUID) error
 

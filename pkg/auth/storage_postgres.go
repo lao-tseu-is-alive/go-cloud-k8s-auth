@@ -128,6 +128,22 @@ func (db *PGX) Update(ctx context.Context, id uuid.UUID, u User) (*User, error) 
 	return res, nil
 }
 
+// AddRole grants a role to a user who does not hold it yet; (nil, nil) means
+// the role was already present.
+func (db *PGX) AddRole(ctx context.Context, id uuid.UUID, role string) (*User, error) {
+	db.log.Debug("AddRole", "id", id, "role", role)
+	res := &User{}
+	err := pgxscan.Get(ctx, db.Conn, res, addUserRole, id, role)
+	if pgxscan.NotFound(err) {
+		return nil, nil
+	}
+	if err != nil {
+		db.log.Error("AddRole failed", "id", id, "error", err)
+		return nil, fmt.Errorf("AddRole: %w", err)
+	}
+	return res, nil
+}
+
 // Delete removes a user by UUID.
 func (db *PGX) Delete(ctx context.Context, id uuid.UUID) error {
 	db.log.Debug("Delete", "id", id)
