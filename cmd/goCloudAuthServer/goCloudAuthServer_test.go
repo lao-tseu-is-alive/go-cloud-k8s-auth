@@ -164,8 +164,19 @@ func TestHealthAndReadiness(t *testing.T) {
 			}
 		})
 
-		t.Run("List Users", func(t *testing.T) {
-			resp, err := regularUserClient.List(context.Background(), connect.NewRequest(&authv1.ListRequest{
+		t.Run("List Users - Regular user forbidden", func(t *testing.T) {
+			_, err := regularUserClient.List(context.Background(), connect.NewRequest(&authv1.ListRequest{
+				Limit: 10,
+			}))
+			assert.Error(t, err)
+			connectErr := &connect.Error{}
+			if assert.ErrorAs(t, err, &connectErr) {
+				assert.Equal(t, connect.CodePermissionDenied, connectErr.Code())
+			}
+		})
+
+		t.Run("List Users - Admin allowed", func(t *testing.T) {
+			resp, err := adminUserClient.List(context.Background(), connect.NewRequest(&authv1.ListRequest{
 				Limit: 10,
 			}))
 			assert.NoError(t, err)
