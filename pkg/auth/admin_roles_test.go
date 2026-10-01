@@ -11,6 +11,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	authv1 "github.com/lao-tseu-is-alive/go-cloud-k8s-auth/gen/auth/v1"
 )
 
 // AddRole grants the role in memory, mirroring the "only when absent" SQL.
@@ -72,4 +74,29 @@ func TestEnsureNotSelfDemotion(t *testing.T) {
 
 	assert.NoError(t, server.ensureNotSelfDemotion(ctx, self.ID, []string{"user", AdminRole}), "keeping one's own admin role is fine")
 	assert.NoError(t, server.ensureNotSelfDemotion(ctx, peer.ID, []string{"user"}), "an admin may demote another admin")
+}
+
+// TestUserDirectoryNeedsAdmin covers the user directory: listing and counting
+// users need the admin role, reading one user is for itself or an admin.
+func TestUserDirectoryNeedsAdmin(t *testing.T) {
+	self := &User{ID: uuid.New(), AlternateAppID: 7, Email: "me@example.org", Roles: []string{"user"}}
+	peer := &User{ID: uuid.New(), AlternateAppID: 8, Email: "peer@example.org", Roles: []string{"user"}}
+	store := &fakeUserStorage{usersByID: map[uuid.UUID]*User{self.ID: self, peer.ID: peer}}
+	server := NewUserConnectServer(NewUserBusinessService(store, discardLogger(), 50), discardLogger())
+	user := context.WithValue(context.Background(), userIDKey, int32(7))
+	admin := context.WithValue(user, isAdminKey, true)
+
+	_, err := server.List(user, connect.NewRequest(&authv1.ListRequest{}))
+	assert.Equal(t, connect.CodePermissionDenied, connect.CodeOf(err), "listing users needs the admin role")
+	_, err = server.Count(user, connect.NewRequest(&authv1.CountRequest{}))
+	assert.Equal(t, connect.CodePermissionDenied, connect.CodeOf(err), "counting users needs the admin role")
+	_, err = server.Get(user, connect.NewRequest(&authv1.GetRequest{Id: peer.ID.String()}))
+	assert.Equal(t, connect.CodePermissionDenied, connect.CodeOf(err), "reading another user needs the admin role")
+	_, err = server.GetByExternalId(user, connect.NewRequest(&authv1.GetByExternalIdRequest{ExternalId: 8}))
+	assert.Equal(t, connect.CodePermissionDenied, connect.CodeOf(err), "reading another user by external id needs the admin role")
+
+	_, err = server.Get(user, connect.NewRequest(&authv1.GetRequest{Id: self.ID.String()}))
+	assert.NoError(t, err, "a user reads itself")
+	_, err = server.Get(admin, connect.NewRequest(&authv1.GetRequest{Id: peer.ID.String()}))
+	assert.NoError(t, err, "an admin reads anyone")
 }

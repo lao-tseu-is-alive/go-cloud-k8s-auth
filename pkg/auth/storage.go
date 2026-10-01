@@ -8,9 +8,10 @@ import (
 
 // UserStorage defines the persistence interface for user operations.
 type UserStorage interface {
-	// UpsertByProvider creates or updates a user based on OAuth provider + provider ID.
-	// On conflict (provider, provider_id), updates name, avatar_url, and last_login_at.
-	UpsertByProvider(ctx context.Context, email, name, avatarURL, provider, providerID string) (*User, error)
+	// UpsertByProvider creates or updates the user of an OAuth login, matched by
+	// provider + provider ID, or by e-mail when info.EmailVerified. It returns
+	// ErrEmailInUse when the e-mail belongs to another account and is not verified.
+	UpsertByProvider(ctx context.Context, info OAuthUserInfo) (*User, error)
 
 	// GetByID returns the user with the specified UUID.
 	GetByID(ctx context.Context, id uuid.UUID) (*User, error)

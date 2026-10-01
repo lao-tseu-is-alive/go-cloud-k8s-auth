@@ -2,14 +2,19 @@ package auth
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 
 	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/lao-tseu-is-alive/go-cloud-k8s-common-libs/pkg/database"
 )
+
+// uniqueViolation is the PostgreSQL SQLSTATE of a unique constraint violation.
+const uniqueViolation = "23505"
 
 // PGX implements UserStorage using PostgreSQL via pgx.
 type PGX struct {
@@ -41,11 +46,16 @@ func NewPgxDB(ctx context.Context, db database.DB, log *slog.Logger) (UserStorag
 	return &PGX{Conn: pgConn, dbi: db, log: log}, nil
 }
 
-// UpsertByProvider creates or updates a user by OAuth provider.
-func (db *PGX) UpsertByProvider(ctx context.Context, email, name, avatarURL, provider, providerID string) (*User, error) {
-	db.log.Debug("UpsertByProvider", "email", email, "provider", provider, "providerID", providerID)
+// UpsertByProvider creates or updates a user by OAuth provider (see UserStorage).
+func (db *PGX) UpsertByProvider(ctx context.Context, info OAuthUserInfo) (*User, error) {
+	db.log.Debug("UpsertByProvider", "provider", info.Provider, "providerID", info.ProviderID, "emailVerified", info.EmailVerified)
 	res := &User{}
-	err := pgxscan.Get(ctx, db.Conn, res, upsertUserByProvider, email, name, avatarURL, provider, providerID)
+	err := pgxscan.Get(ctx, db.Conn, res, upsertUserByProvider,
+		info.Email, info.Name, info.AvatarURL, info.Provider, info.ProviderID, info.EmailVerified)
+	if pgErr := (*pgconn.PgError)(nil); errors.As(err, &pgErr) && pgErr.Code == uniqueViolation && pgErr.ConstraintName == "users_email_key" {
+		db.log.Warn("UpsertByProvider: e-mail used by another account and not verified", "provider", info.Provider)
+		return nil, ErrEmailInUse
+	}
 	if err != nil {
 		db.log.Error("UpsertByProvider failed", "error", err)
 		return nil, fmt.Errorf("UpsertByProvider: %w", err)

@@ -64,7 +64,7 @@ func (s *AuthConnectServer) OAuthCallback(
 		if errors.Is(err, ErrInvalidState) {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
-		if errors.Is(err, ErrUserDisabled) {
+		if errors.Is(err, ErrUserDisabled) || errors.Is(err, ErrEmailInUse) {
 			return nil, connect.NewError(connect.CodePermissionDenied, err)
 		}
 		if errors.Is(err, ErrProviderError) {

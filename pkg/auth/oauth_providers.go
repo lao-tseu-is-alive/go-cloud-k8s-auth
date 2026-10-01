@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
@@ -72,17 +73,20 @@ func FetchGoogleUserInfo(ctx context.Context, token *oauth2.Token) (*OAuthUserIn
 		Email   string `json:"email"`
 		Name    string `json:"name"`
 		Picture string `json:"picture"`
+		// VerifiedEmail is Google's assertion that the user owns Email.
+		VerifiedEmail bool `json:"verified_email"`
 	}
 	if err := json.Unmarshal(body, &data); err != nil {
 		return nil, fmt.Errorf("failed to parse Google user info: %w", err)
 	}
 
 	return &OAuthUserInfo{
-		Provider:   "google",
-		ProviderID: data.ID,
-		Email:      data.Email,
-		Name:       data.Name,
-		AvatarURL:  data.Picture,
+		Provider:      "google",
+		ProviderID:    data.ID,
+		Email:         data.Email,
+		Name:          data.Name,
+		AvatarURL:     data.Picture,
+		EmailVerified: data.VerifiedEmail,
 	}, nil
 }
 
@@ -111,55 +115,80 @@ func FetchGitHubUserInfo(ctx context.Context, token *oauth2.Token) (*OAuthUserIn
 		return nil, fmt.Errorf("failed to parse GitHub user info: %w", err)
 	}
 
-	// If email is not public, fetch from emails endpoint
-	email := data.Email
-	if email == "" {
-		email, _ = fetchGitHubPrimaryEmail(ctx, client)
+	// The emails endpoint tells whether an address is verified, also for the
+	// public profile address; without it nothing is verified.
+	emails, err := fetchGitHubEmails(client)
+	if err != nil {
+		emails = nil
 	}
+	email, verified := pickGitHubEmail(data.Email, emails)
 	name := data.Name
 	if name == "" {
 		name = data.Login
 	}
 
 	return &OAuthUserInfo{
-		Provider:   "github",
-		ProviderID: fmt.Sprintf("%d", data.ID),
-		Email:      email,
-		Name:       name,
-		AvatarURL:  data.AvatarURL,
+		Provider:      "github",
+		ProviderID:    fmt.Sprintf("%d", data.ID),
+		Email:         email,
+		Name:          name,
+		AvatarURL:     data.AvatarURL,
+		EmailVerified: verified,
 	}, nil
 }
 
-// fetchGitHubPrimaryEmail fetches the primary email from GitHub's emails API.
-func fetchGitHubPrimaryEmail(ctx context.Context, client *http.Client) (string, error) {
+// githubEmail is one address of the GitHub emails API.
+type githubEmail struct {
+	Email    string `json:"email"`
+	Primary  bool   `json:"primary"`
+	Verified bool   `json:"verified"`
+}
+
+// fetchGitHubEmails reads the user's addresses from GitHub's emails API.
+func fetchGitHubEmails(client *http.Client) ([]githubEmail, error) {
 	resp, err := client.Get("https://api.github.com/user/emails")
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-
-	var emails []struct {
-		Email   string `json:"email"`
-		Primary bool   `json:"primary"`
-	}
+	var emails []githubEmail
 	if err := json.Unmarshal(body, &emails); err != nil {
-		return "", err
+		return nil, err
 	}
+	return emails, nil
+}
 
+// pickGitHubEmail chooses the login e-mail and whether GitHub verified it: the
+// public profile address when set, otherwise the primary address, otherwise
+// a verified one.
+func pickGitHubEmail(public string, emails []githubEmail) (string, bool) {
+	if public != "" {
+		for _, e := range emails {
+			if strings.EqualFold(e.Email, public) {
+				return public, e.Verified
+			}
+		}
+		return public, false
+	}
 	for _, e := range emails {
 		if e.Primary {
-			return e.Email, nil
+			return e.Email, e.Verified
+		}
+	}
+	for _, e := range emails {
+		if e.Verified {
+			return e.Email, true
 		}
 	}
 	if len(emails) > 0 {
-		return emails[0].Email, nil
+		return emails[0].Email, false
 	}
-	return "", fmt.Errorf("no email found")
+	return "", false
 }
 
 // FetchMicrosoftUserInfo fetches user profile from Microsoft Graph.
@@ -197,6 +226,9 @@ func FetchMicrosoftUserInfo(ctx context.Context, token *oauth2.Token) (*OAuthUse
 		Email:      email,
 		Name:       data.DisplayName,
 		AvatarURL:  "", // Microsoft Graph requires separate photo endpoint
+		// Graph does not say whether mail is verified (a personal or guest
+		// account may show any address): it never links to another account.
+		EmailVerified: false,
 	}, nil
 }
 

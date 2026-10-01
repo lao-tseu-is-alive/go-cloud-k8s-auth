@@ -49,12 +49,34 @@ func (s *UserConnectServer) mapErrorToConnect(err error) *connect.Error {
 	}
 }
 
-// List returns a paginated list of users.
+// requireAdmin refuses a caller without the admin role.
+func (s *UserConnectServer) requireAdmin(ctx context.Context) error {
+	if _, isAdmin := GetUserFromContext(ctx); !isAdmin {
+		return s.mapErrorToConnect(ErrAdminRequired)
+	}
+	return nil
+}
+
+// requireSelfOrAdmin refuses a caller who is neither the user with this
+// alternate app id nor an administrator: the user directory (names, e-mails)
+// is not readable by every authenticated user.
+func (s *UserConnectServer) requireSelfOrAdmin(ctx context.Context, alternateAppID int64) error {
+	callerID, isAdmin := GetUserFromContext(ctx)
+	if isAdmin || (callerID > 0 && int64(callerID) == alternateAppID) {
+		return nil
+	}
+	return s.mapErrorToConnect(ErrAdminRequired)
+}
+
+// List returns a paginated list of users (administrators only).
 func (s *UserConnectServer) List(
 	ctx context.Context,
 	req *connect.Request[authv1.ListRequest],
 ) (*connect.Response[authv1.ListResponse], error) {
 	s.Log.Info("Connect: List called")
+	if err := s.requireAdmin(ctx); err != nil {
+		return nil, err
+	}
 
 	userId, _ := GetUserFromContext(ctx)
 	s.Log.Info("List", "callerUserId", userId)
@@ -117,7 +139,7 @@ func (s *UserConnectServer) Create(
 	}), nil
 }
 
-// Get retrieves a user by ID.
+// Get retrieves a user by ID (the user itself or an administrator).
 func (s *UserConnectServer) Get(
 	ctx context.Context,
 	req *connect.Request[authv1.GetRequest],
@@ -132,6 +154,9 @@ func (s *UserConnectServer) Get(
 	user, err := s.UserService.Get(ctx, id)
 	if err != nil {
 		return nil, s.mapErrorToConnect(err)
+	}
+	if err := s.requireSelfOrAdmin(ctx, user.AlternateAppID); err != nil {
+		return nil, err
 	}
 
 	return connect.NewResponse(&authv1.GetResponse{
@@ -223,12 +248,15 @@ func (s *UserConnectServer) Delete(
 	return connect.NewResponse(&authv1.DeleteResponse{}), nil
 }
 
-// Count returns the number of users.
+// Count returns the number of users (administrators only).
 func (s *UserConnectServer) Count(
 	ctx context.Context,
 	req *connect.Request[authv1.CountRequest],
 ) (*connect.Response[authv1.CountResponse], error) {
 	s.Log.Info("Connect: Count called")
+	if err := s.requireAdmin(ctx); err != nil {
+		return nil, err
+	}
 
 	var disabledFilter *bool
 	if req.Msg.Inactivated {
@@ -245,12 +273,16 @@ func (s *UserConnectServer) Count(
 	}), nil
 }
 
-// GetByExternalId retrieves a user by their alternate app ID.
+// GetByExternalId retrieves a user by their alternate app ID (the user itself
+// or an administrator).
 func (s *UserConnectServer) GetByExternalId(
 	ctx context.Context,
 	req *connect.Request[authv1.GetByExternalIdRequest],
 ) (*connect.Response[authv1.GetByExternalIdResponse], error) {
 	s.Log.Info("Connect: GetByExternalId called", "externalId", req.Msg.ExternalId)
+	if err := s.requireSelfOrAdmin(ctx, int64(req.Msg.ExternalId)); err != nil {
+		return nil, err
+	}
 
 	user, err := s.UserService.GetByExternalId(ctx, int64(req.Msg.ExternalId))
 	if err != nil {

@@ -290,6 +290,9 @@ func (h *BrowserHandlers) handleOAuthCallback(c echo.Context) error {
 		if errors.Is(err, ErrUserDisabled) {
 			return c.String(http.StatusForbidden, "this account is disabled")
 		}
+		if errors.Is(err, ErrEmailInUse) {
+			return c.String(http.StatusConflict, "this e-mail already belongs to an account created with another provider, and this provider does not confirm it is verified: sign in with the original provider")
+		}
 		return c.String(http.StatusBadGateway, "oauth authentication failed, please retry the login")
 	}
 

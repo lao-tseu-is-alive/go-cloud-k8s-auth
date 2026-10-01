@@ -172,13 +172,7 @@ func (s *AuthBusinessService) AuthenticateOAuthUser(ctx context.Context, provide
 		return nil, fmt.Errorf("%w: provider returned no email", ErrProviderError)
 	}
 
-	user, err := s.Store.UpsertByProvider(ctx,
-		oauthUserInfo.Email,
-		oauthUserInfo.Name,
-		oauthUserInfo.AvatarURL,
-		oauthUserInfo.Provider,
-		oauthUserInfo.ProviderID,
-	)
+	user, err := s.Store.UpsertByProvider(ctx, *oauthUserInfo)
 	if err != nil {
 		return nil, fmt.Errorf("failed to upsert user: %w", err)
 	}

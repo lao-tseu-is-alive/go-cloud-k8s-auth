@@ -57,4 +57,8 @@ type OAuthUserInfo struct {
 	Email      string
 	Name       string
 	AvatarURL  string
+	// EmailVerified is true only when the provider asserts that the user owns
+	// Email (Google verified_email, a verified GitHub address). Only a verified
+	// e-mail may link the login to an existing account of another provider.
+	EmailVerified bool
 }

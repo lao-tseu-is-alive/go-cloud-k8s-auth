@@ -13,4 +13,7 @@ var (
 	ErrProviderError = errors.New("oauth provider error")
 	ErrInvalidState  = errors.New("invalid or expired oauth state")
 	ErrUserDisabled  = errors.New("user account is disabled")
+	// ErrEmailInUse is a login whose e-mail belongs to another account while the
+	// provider does not assert it verified: it is refused instead of linked.
+	ErrEmailInUse = errors.New("e-mail already used by another account")
 )

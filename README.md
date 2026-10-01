@@ -135,13 +135,13 @@ session cookie or a browser redirect lives here (not in Connect RPC).
 
 | Method | Endpoint | Description | Public / Secured |
 |--------|----------|-------------|------------------|
-| `GET` | `/goapi/v1/user` | List users with pagination | **Secured** |
+| `GET` | `/goapi/v1/user` | List users with pagination | **Secured (Admin)** |
 | `POST` | `/goapi/v1/user` | Create a user | **Secured (Admin)** |
-| `GET` | `/goapi/v1/user/{id}` | Get user details by UUID | **Secured** |
+| `GET` | `/goapi/v1/user/{id}` | Get user details by UUID | **Secured (self or Admin)** |
 | `PUT` | `/goapi/v1/user/{id}` | Update a user's details | **Secured (Admin)** |
 | `DELETE` | `/goapi/v1/user/{id}` | Delete a user by UUID | **Secured (Admin)** |
-| `GET` | `/goapi/v1/user/count` | Count total users in the DB | **Secured** |
-| `GET` | `/goapi/v1/user/by-external-id/{external_id}` | Retrieve a user by their legacy integer ID | **Secured** |
+| `GET` | `/goapi/v1/user/count` | Count total users in the DB | **Secured (Admin)** |
+| `GET` | `/goapi/v1/user/by-external-id/{external_id}` | Retrieve a user by their legacy integer ID | **Secured (self or Admin)** |
 
 ### Connect RPC Endpoints
 
@@ -359,7 +359,7 @@ curl -X POST http://localhost:9090/goapi/v1/auth/validateToken \
   -d "{\"token\": \"$JWT_TOKEN\"}"
 ```
 
-#### 3. List Users (Requires JWT)
+#### 3. List Users (Requires an admin JWT)
 ```bash
 curl -H "Authorization: Bearer $JWT_TOKEN" \
   http://localhost:9090/goapi/v1/user
@@ -440,6 +440,8 @@ Queries the user service (requires admin rights or appropriate JWT token roles):
 
 ```bash
 make test
+# storage tests against a disposable PostgreSQL database (skipped when unset):
+AUTH_TEST_DATABASE_URL='postgres://<user>@127.0.0.1:5432/<scratch_db>?sslmode=disable' go test ./pkg/auth/...
 ```
 
 ---
@@ -528,7 +530,12 @@ go-cloud-k8s-auth/
 ## 🔒 Security
 
 - All CVE scans performed automatically before container builds
-- JWT authentication required for all `/goapi/v1/*` endpoints
+- JWT authentication required for all `/goapi/v1/*` endpoints; the user directory (list,
+  count, another user's details) is for administrators only
+- A login is linked to an existing account by e-mail only when the provider asserts the
+  e-mail verified (Google `verified_email`, a verified GitHub address; Microsoft Graph never
+  does): otherwise a login whose e-mail belongs to another account is refused (HTTP 409)
+  instead of taking that account over
 - SonarCloud analysis for code quality and security
 - Dependabot for dependency updates
 

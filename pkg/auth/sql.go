@@ -4,14 +4,16 @@ package auth
 const (
 	// --- Users ---
 
-	// Matches an existing user by OAuth identity first, then by email
-	// (providers verify email ownership, so a same-email login from another
-	// provider re-links that account instead of violating users_email_key).
+	// Matches an existing user by OAuth identity first, then by email, but by
+	// email only when the provider asserts it verified ($6): a same-email
+	// login from another provider then re-links that account. Without a
+	// verified email, a login whose email belongs to another account violates
+	// users_email_key and is refused (ErrEmailInUse) instead of taking it over.
 	// A plain ON CONFLICT can only target one unique constraint, hence the CTE.
 	upsertUserByProvider = `
 WITH target AS (
     SELECT id FROM go_auth.users
-    WHERE (provider = $4 AND provider_id = $5) OR email = $1
+    WHERE (provider = $4 AND provider_id = $5) OR ($6::boolean AND email = $1)
     ORDER BY (provider = $4 AND provider_id = $5) DESC
     LIMIT 1
 ), updated AS (
